@@ -27,13 +27,10 @@ void hello_moon_task(void *pvParameters)
     vTaskDelete(NULL);
 }
 
-
 // ESP32 application entry point
 void app_main()
 {
     ESP_LOGD(TAG, "Starting...");
     xTaskCreatePinnedToCore(hello_world_task, "Hello world task", 2048, NULL, 1, NULL, 1);
     xTaskCreatePinnedToCore(hello_moon_task, "Hello moon task", 2048, NULL, 1, NULL, 1);
-
-    while(1);
 }

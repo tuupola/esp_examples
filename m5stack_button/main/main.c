@@ -68,6 +68,4 @@ void app_main()
     gpio_isr_handler_add(GPIO_NUM_39, gpio_isr_handler, (void*) GPIO_NUM_39);
     gpio_isr_handler_add(GPIO_NUM_38, gpio_isr_handler, (void*) GPIO_NUM_38);
     gpio_isr_handler_add(GPIO_NUM_37, gpio_isr_handler, (void*) GPIO_NUM_37);
-
-    while(1);
 }
