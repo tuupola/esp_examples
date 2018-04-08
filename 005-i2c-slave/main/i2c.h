@@ -26,8 +26,8 @@ SOFTWARE.
 #define	_I2C_H
 
 #define SPEKTRUM_DATA_LENGTH   16
-#define	TELE_DEVICE_AIRSPEED   0x11
-#define	TELE_DEVICE_ALTITUDE   0x12
+#define TELE_DEVICE_AIRSPEED   0x11
+#define TELE_DEVICE_ALTITUDE   0x12
 
 #define I2C_SLAVE_1_SCL        19 /* Use yellow wire. */
 #define I2C_SLAVE_1_SDA        18 /* Use green wire. */
