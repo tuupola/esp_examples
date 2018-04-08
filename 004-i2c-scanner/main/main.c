@@ -38,7 +38,7 @@ void i2c_scan_task(void *params)
 {
     while(1) {
         i2c_master_scan();
-        vTaskDelay(1000 / portTICK_RATE_MS);
+        vTaskDelay(3000 / portTICK_RATE_MS);
     }
 
     vTaskDelete(NULL);
