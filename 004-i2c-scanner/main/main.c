@@ -32,7 +32,7 @@ SOFTWARE.
 #include "sdkconfig.h"
 #include "i2c.h"
 
-static const char* TAG = "i2c_scanner";
+static const char* TAG = "main";
 
 void i2c_scan_task(void *params)
 {

@@ -1,6 +1,6 @@
 /*
 
-Copyright 2018 Neil Kolban
+Copyright 2017 Neil Kolban
 Modifications Copyright 2017-2018 Mika Tuupola
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -28,7 +28,7 @@ SOFTWARE.
 
 #include "i2c.h"
 
-static const char* TAG = "tinkermetry";
+static const char* TAG = "i2cscanner";
 
 void i2c_master_scan()
 {

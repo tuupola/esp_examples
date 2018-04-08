@@ -27,7 +27,7 @@ SOFTWARE.
 
 #include "i2c.h"
 
-static const char* TAG = "i2c_scanner";
+static const char* TAG = "i2c";
 
 void i2c_master_init()
 {
