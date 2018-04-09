@@ -47,8 +47,8 @@ void i2c_slave_1_init()
     ESP_ERROR_CHECK(i2c_driver_install(
         i2c_slave_port,
         conf.mode,
-        I2C_SLAVE_RX_BUF_LEN,
-        I2C_SLAVE_TX_BUF_LEN,
+        I2C_SLAVE_1_RX_BUF_LEN,
+        I2C_SLAVE_1_TX_BUF_LEN,
         0
     ));
 }
@@ -71,8 +71,8 @@ void i2c_slave_2_init()
     ESP_ERROR_CHECK(i2c_driver_install(
         i2c_slave_port,
         conf.mode,
-        I2C_SLAVE_RX_BUF_LEN,
-        I2C_SLAVE_TX_BUF_LEN,
+        I2C_SLAVE_2_RX_BUF_LEN,
+        I2C_SLAVE_2_TX_BUF_LEN,
         0
     ));
 }

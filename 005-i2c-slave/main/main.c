@@ -28,27 +28,79 @@ SOFTWARE.
 
 #include <esp_log.h>
 #include <driver/i2c.h>
-
-//#include <freertos/FreeRTOS.h>
-//#include <freertos/task.h>
+#include <time.h>
+#include <stdlib.h>
 
 #include "sdkconfig.h"
 #include "i2c.h"
 
 static const char* TAG = "main";
 
-void dummy_task(void *params)
+void i2c_slave_1_fill_task(void *params)
 {
+    uint8_t *data_write = (uint8_t*) malloc(SLAVE_1_DATA_LENGTH);
+    memset(data_write, 0, SLAVE_1_DATA_LENGTH);
+
     while(1) {
-        ESP_LOGI(TAG, "Wheee!!");
-        vTaskDelay(1000 / portTICK_RATE_MS);
+        size_t data_size = i2c_slave_write_buffer(
+            I2C_SLAVE_1_NUM,
+            data_write,
+            SLAVE_1_DATA_LENGTH,
+            1000 / portTICK_RATE_MS
+        );
+        ESP_LOGI(TAG, "Wrote %d bytes to slave 1.", data_size);
+
+        ESP_LOG_BUFFER_HEXDUMP(
+            TAG,
+            (uint8_t *) data_write,
+            data_size,
+            ESP_LOG_INFO
+        );
+
+        *data_write += 1;
+
+        uint8_t delay = 100 + (rand() % 10) * 10 ;
+        vTaskDelay(delay / portTICK_RATE_MS);
     }
     vTaskDelete(NULL);
 }
+
+void i2c_slave_2_fill_task(void *params)
+{
+    uint8_t *data_write = (uint8_t*) malloc(SLAVE_2_DATA_LENGTH);
+    memset(data_write, 0, SLAVE_2_DATA_LENGTH);
+
+    while(1) {
+        size_t data_size = i2c_slave_write_buffer(
+            I2C_SLAVE_2_NUM,
+            data_write,
+            SLAVE_2_DATA_LENGTH,
+            1000 / portTICK_RATE_MS
+        );
+        ESP_LOGI(TAG, "Wrote %d bytes to slave 2.", data_size);
+
+        ESP_LOG_BUFFER_HEXDUMP(
+            TAG,
+            (uint8_t *) data_write,
+            data_size,
+            ESP_LOG_INFO
+        );
+
+        *data_write += 8;
+
+        uint8_t delay = 100 + (rand() % 10) * 10 ;
+        vTaskDelay(delay / portTICK_RATE_MS);
+    }
+    vTaskDelete(NULL);
+}
+
 void app_main()
 {
+    srand(time(NULL));
+
     i2c_slave_1_init();
     i2c_slave_2_init();
 
-    xTaskCreatePinnedToCore(dummy_task, "Dummy", 2048, NULL, 1, NULL, 1);
+    xTaskCreatePinnedToCore(i2c_slave_1_fill_task, "Slave 1", 2048, NULL, 1, NULL, 1);
+    xTaskCreatePinnedToCore(i2c_slave_2_fill_task, "Slave 2", 2048, NULL, 1, NULL, 1);
 }
