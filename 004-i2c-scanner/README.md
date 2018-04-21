@@ -1,6 +1,6 @@
 ## Hardware I2C scanner
 
-Uses ESP32 hardware I2C to scan available devices in the bus. Adapted from Neil Kolbans [ESP32 snippets](https://github.com/nkolban/esp32-snippets/tree/master/i2c/scanner).
+Uses ESP32 hardware I2C to scan available devices in the bus. Adapted from Neil Kolban's [ESP32 snippets](https://github.com/nkolban/esp32-snippets/tree/master/i2c/scanner).
 
 ```
 ...
