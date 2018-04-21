@@ -1,7 +1,7 @@
 /*
 
 Copyright (c) 2017 Neil Kolban
-Modifications Copyright (c) 2017-2018 Mika Tuupola
+Copyright (c) 2017-2018 Mika Tuupola
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -34,26 +34,21 @@ void i2c_master_scan()
 {
     ESP_LOGD(TAG, "Scanning I2C bus.");
 
-	int i;
+	uint8_t address;
 	esp_err_t result;
 	printf("     0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f\n");
 	printf("00:         ");
-	for (i=3; i < 0x78; i++) {
-		i2c_cmd_handle_t cmd = i2c_cmd_link_create();
-		i2c_master_start(cmd);
-		i2c_master_write_byte(cmd, (i << 1) | I2C_MASTER_WRITE, 1 /* expect ack */);
-		i2c_master_stop(cmd);
+	for (address = 3; address < 0x78; address++) {
+		result = i2c_master_probe(address);
 
-		result = i2c_master_cmd_begin(I2C_MASTER_NUM, cmd, 10 / portTICK_PERIOD_MS);
-		if (i % 16 == 0) {
-			printf("\n%.2x:", i);
+		if (address % 16 == 0) {
+			printf("\n%.2x:", address);
 		}
 		if (result == ESP_OK) {
-			printf(" %.2x", i);
+			printf(" %.2x", address);
 		} else {
 			printf(" --");
 		}
-		i2c_cmd_link_delete(cmd);
 	}
     printf("\n");
 }

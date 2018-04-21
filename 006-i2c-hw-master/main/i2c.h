@@ -59,6 +59,7 @@ void i2c_master_init();
 void i2c_slave_1_init();
 void i2c_slave_2_init();
 void i2c_master_scan();
+esp_err_t i2c_master_probe(uint8_t address);
 
 #endif
 
