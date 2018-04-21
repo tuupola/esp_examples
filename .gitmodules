@@ -1,3 +1,6 @@
 [submodule "u8g2-ssd1306/components/u8g2"]
 	path = 003-u8g2-ssd1306/components/u8g2
 	url = https://github.com/olikraus/u8g2.git
+[submodule "008-i2c-sw-master/components/esp32-software-i2c"]
+	path = 008-i2c-sw-master/components/esp32-software-i2c
+	url = git@github.com:tuupola/esp32-software-i2c.git
