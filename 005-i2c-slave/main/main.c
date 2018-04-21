@@ -59,7 +59,7 @@ void i2c_slave_1_fill_task(void *params)
 
         *data_write += 1;
 
-        uint8_t delay = 100 + (rand() % 10) * 10 ;
+        uint16_t delay = 950 + (rand() % 10) * 10 ;
         vTaskDelay(delay / portTICK_RATE_MS);
     }
     vTaskDelete(NULL);
@@ -86,9 +86,9 @@ void i2c_slave_2_fill_task(void *params)
             ESP_LOG_INFO
         );
 
-        *data_write += 8;
+        *data_write += 1;
 
-        uint8_t delay = 100 + (rand() % 10) * 10 ;
+        uint16_t delay = 950 + (rand() % 10) * 10;
         vTaskDelay(delay / portTICK_RATE_MS);
     }
     vTaskDelete(NULL);
