@@ -3,7 +3,7 @@
 # project subdirectory.
 #
 
-PROJECT_NAME := u8g2-ssd1306
+PROJECT_NAME := i2c-scanner
 
 include $(IDF_PATH)/make/project.mk
 
