@@ -15,8 +15,48 @@
 #include "driver/spi_master.h"
 #include "soc/gpio_struct.h"
 #include "driver/gpio.h"
+#include <esp_log.h>
 
 #include "pretty_effect.h"
+//#include "memory.h"
+
+static const char* TAG = "main";
+
+const uint16_t alien[] = {
+ 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
+ 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0xFFFF, 0xFFFF, 0x0000, 0x0000, 0xFFFF, 0xFFFF, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
+ 0x0000, 0x0000, 0xFFFF, 0x0000, 0xFFFF, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0xFFFF, 0x0000, 0xFFFF, 0x0000, 0x0000,
+ 0x0000, 0x0000, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0x0000, 0x0000,
+ 0x0000, 0x0000, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0x0000, 0x0000,
+ 0x0000, 0x0000, 0x0000, 0xFFFF, 0xFFFF, 0x0000, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0x0000, 0xFFFF, 0xFFFF, 0x0000, 0x0000, 0x0000,
+ 0x0000, 0x0000, 0x0000, 0x0000, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0x0000, 0x0000, 0x0000, 0x0000,
+ 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0xFFFF, 0x0000, 0x0000, 0x0000, 0x0000, 0xFFFF, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
+ 0x0000, 0x0000, 0x0000, 0x0000, 0xFFFF, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0xFFFF, 0x0000, 0x0000, 0x0000, 0x0000,
+ 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
+};
+
+const uint16_t alien2[] = {
+ 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
+ 0x0000, 0x0000, 0x0000, 0xFFFF, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0xFFFF, 0x0000, 0x0000, 0x0000,
+ 0x0000, 0x0000, 0x0000, 0x0000, 0xFFFF, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0xFFFF, 0x0000, 0x0000, 0x0000, 0x0000,
+ 0x0000, 0x0000, 0x0000, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0x0000, 0x0000, 0x0000,
+ 0x0000, 0x0000, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0x0000, 0x0000,
+ 0x0000, 0x0000, 0xFFFF, 0xFFFF, 0xFFFF, 0x0000, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0x0000, 0xFFFF, 0xFFFF, 0xFFFF, 0x0000, 0x0000,
+ 0x0000, 0x0000, 0xFFFF, 0x0000, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0x0000, 0xFFFF, 0x0000, 0x0000,
+ 0x0000, 0x0000, 0xFFFF, 0x0000, 0x0000, 0xFFFF, 0x0000, 0x0000, 0x0000, 0x0000, 0xFFFF, 0x0000, 0x0000, 0xFFFF, 0x0000, 0x0000,
+ 0x0000, 0x0000, 0x0000, 0x0000, 0xFFFF, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0xFFFF, 0x0000, 0x0000, 0x0000, 0x0000,
+ 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
+};
+
+
+#define swap(x,y) do \
+    { unsigned char swap_temp[sizeof(x) == sizeof(y) ? (signed)sizeof(x) : -1]; \
+        memcpy(swap_temp,&y,sizeof(x)); \
+        memcpy(&y,&x,       sizeof(x)); \
+        memcpy(&x,swap_temp,sizeof(x)); \
+    } while (0)
+
+static spi_device_handle_t spi;
 
 /*
  This code displays some fancy graphics on the 320x240 LCD on an ESP-WROVER_KIT board.
@@ -28,14 +68,6 @@
  line: every transaction has as the user-definable argument the needed state of the D/C line and just
  before the transaction is sent, the callback will set this line to the correct state.
 */
-
-// TFT_LED_PIN = const(32)
-// TFT_DC_PIN = const(27)
-// TFT_CS_PIN = const(14)
-// TFT_MOSI_PIN = const(23)
-// TFT_CLK_PIN = const(18)
-// TFT_RST_PIN = const(33)
-// TFT_MISO_PIN = const(19)
 
 #define PIN_NUM_MISO 19
 #define PIN_NUM_MOSI 23
@@ -64,26 +96,6 @@ typedef enum {
     LCD_TYPE_ST,
     LCD_TYPE_MAX,
 } type_lcd_t;
-
-//Place data into DRAM. Constant data gets placed into DROM by default, which is not accessible by DMA.
-DRAM_ATTR static const lcd_init_cmd_t st_init_cmds[]={
-    {0x36, {(1<<5)|(1<<6)}, 1},
-    {0x3A, {0x55}, 1},
-    {0xB2, {0x0c, 0x0c, 0x00, 0x33, 0x33}, 5},
-    {0xB7, {0x45}, 1},
-    {0xBB, {0x2B}, 1},
-    {0xC0, {0x2C}, 1},
-    {0xC2, {0x01, 0xff}, 2},
-    {0xC3, {0x11}, 1},
-    {0xC4, {0x20}, 1},
-    {0xC6, {0x0f}, 1},
-    {0xD0, {0xA4, 0xA1}, 1},
-    {0xE0, {0xD0, 0x00, 0x05, 0x0E, 0x15, 0x0D, 0x37, 0x43, 0x47, 0x09, 0x15, 0x12, 0x16, 0x19}, 14},
-    {0xE1, {0xD0, 0x00, 0x05, 0x0D, 0x0C, 0x06, 0x2D, 0x44, 0x40, 0x0E, 0x1C, 0x18, 0x16, 0x19}, 14},
-    {0x11, {0}, 0x80},
-    {0x29, {0}, 0x80},
-    {0, {0}, 0xff}
-};
 
 DRAM_ATTR static const lcd_init_cmd_t ili_init_cmds[]={
     {0xCF, {0x00, 0x83, 0X30}, 3},
@@ -149,22 +161,22 @@ void lcd_spi_pre_transfer_callback(spi_transaction_t *t)
     gpio_set_level(PIN_NUM_DC, dc);
 }
 
-uint32_t lcd_get_id(spi_device_handle_t spi)
-{
-    //get_id cmd
-    lcd_cmd( spi, 0x04);
+// uint32_t lcd_get_id(spi_device_handle_t spi)
+// {
+//     //get_id cmd
+//     lcd_cmd( spi, 0x04);
 
-    spi_transaction_t t;
-    memset(&t, 0, sizeof(t));
-    t.length=8*3;
-    t.flags = SPI_TRANS_USE_RXDATA;
-    t.user = (void*)1;
+//     spi_transaction_t t;
+//     memset(&t, 0, sizeof(t));
+//     t.length=8*3;
+//     t.flags = SPI_TRANS_USE_RXDATA;
+//     t.user = (void*)1;
 
-    esp_err_t ret = spi_device_transmit(spi, &t);
-    assert( ret == ESP_OK );
+//     esp_err_t ret = spi_device_transmit(spi, &t);
+//     assert( ret == ESP_OK );
 
-    return *(uint32_t*)t.rx_data;
-}
+//     return *(uint32_t*)t.rx_data;
+// }
 
 //Initialize the display
 void lcd_init(spi_device_handle_t spi)
@@ -184,38 +196,26 @@ void lcd_init(spi_device_handle_t spi)
     vTaskDelay(100 / portTICK_RATE_MS);
 
     //detect LCD type
-    uint32_t lcd_id = lcd_get_id(spi);
+    //uint32_t lcd_id = lcd_get_id(spi);
     int lcd_detected_type = 0;
     int lcd_type;
 
-    printf("LCD ID: %08X\n", lcd_id);
-    if ( lcd_id == 0 ) {
-        //zero, ili
+    // printf("LCD ID: %08X\n", lcd_id);
+    // if ( lcd_id == 0 ) {
+    //     //zero, ili
         lcd_detected_type = LCD_TYPE_ILI;
         printf("ILI9341 detected.\n");
-    } else {
-        // none-zero, ST
-        lcd_detected_type = LCD_TYPE_ST;
-        printf("ST7789V detected.\n");
-    }
+    // } else {
+    //     // none-zero, ST
+    //     lcd_detected_type = LCD_TYPE_ST;
+    //     printf("ST7789V detected.\n");
+    // }
 
-#ifdef CONFIG_LCD_TYPE_AUTO
-    lcd_type = lcd_detected_type;
-#elif defined( CONFIG_LCD_TYPE_ST7789V )
-    printf("kconfig: force CONFIG_LCD_TYPE_ST7789V.\n");
-    lcd_type = LCD_TYPE_ST;
-#elif defined( CONFIG_LCD_TYPE_ILI9341 )
+
     printf("kconfig: force CONFIG_LCD_TYPE_ILI9341.\n");
     lcd_type = LCD_TYPE_ILI;
-#endif
-    if ( lcd_type == LCD_TYPE_ST ) {
-        printf("LCD ST7789V initialization.\n");
-        lcd_init_cmds = st_init_cmds;
-    } else {
-        printf("LCD ILI9341 initialization.\n");
-        lcd_init_cmds = ili_init_cmds;
-    }
-    printf("Foo.\n");
+    printf("LCD ILI9341 initialization.\n");
+    lcd_init_cmds = ili_init_cmds;
 
     //Send all the commands
     while (lcd_init_cmds[cmd].databytes!=0xff) {
@@ -288,6 +288,145 @@ static void send_lines(spi_device_handle_t spi, int ypos, uint16_t *linedata)
 }
 
 
+//static void send_lines(spi_device_handle_t spi, int ypos, uint16_t *linedata)
+void ili9431_fill(spi_device_handle_t spi, int32_t x1, int32_t y1, int32_t x2, int32_t y2, uint16_t colour) //, lv_color_t color)
+{
+    esp_err_t ret;
+    int x;
+    /* Transaction descriptors. Declared static so they're not allocated on the */
+    /* stack; we need this memory even when this function is finished because */
+    /* the SPI driver needs access to it even while we're already calculating */
+    /* the next line. */
+
+    static spi_transaction_t trans[6];
+
+    /* In theory, it's better to initialize trans and data only once and hang */
+    /* on to the initialized variables. We allocate them on the stack, so we need */
+    /* to re-init them each call. */
+    for (x=0; x<6; x++) {
+        memset(&trans[x], 0, sizeof(spi_transaction_t)); // set everything to +
+        if ((x&1)==0) {
+            //Even transfers are commands
+            trans[x].length=8;
+            trans[x].user=(void*)0;
+        } else {
+            //Odd transfers are data
+            trans[x].length=8*4;
+            trans[x].user=(void*)1;
+        }
+        trans[x].flags=SPI_TRANS_USE_TXDATA;
+    }
+
+    uint32_t size = (x2 - x1 + 1) * (y2 - y1 + 1);
+    uint16_t buffer[size];
+
+    // for (uint32_t i = 0; i < size; i++) {
+    //     buffer[i] = colour;
+    // }
+
+    //buffer = alien;
+
+    trans[0].tx_data[0] = 0x2A;           //Column Address Set
+    trans[1].tx_data[0] = x1 >> 8;              //Start Col High
+    trans[1].tx_data[1] = x1 & 0xff;              //Start Col Low
+    trans[1].tx_data[2] = x2 >> 8;       //End Col High
+    trans[1].tx_data[3] = x2 &0xff;     //End Col Low
+    trans[2].tx_data[0] = 0x2B;           //Page address set
+    trans[3].tx_data[0] = y1 >> 8;        //Start page high
+    trans[3].tx_data[1] = y1 & 0xff;      //start page low
+    trans[3].tx_data[2] = y2 >> 8;    //end page high
+    trans[3].tx_data[3] = y2 &0xff;  //end page low
+    trans[4].tx_data[0]=0x2C;           //memory write
+    trans[5].tx_buffer = alien;        //finally send the line data
+    trans[5].length= size * 2 * 8; //320*2*8*PARALLEL_LINES;          //Data length, in bits
+    trans[5].flags=0; //undo SPI_TRANS_USE_TXDATA flag
+
+    //Queue all transactions.
+    for (x=0; x<6; x++) {
+        ret=spi_device_queue_trans(spi, &trans[x], portMAX_DELAY);
+        assert(ret==ESP_OK);
+    }
+
+    //When we are here, the SPI driver is busy (in the background) getting the transactions sent. That happens
+    //mostly using DMA, so the CPU doesn't have much to do here. We're not going to wait for the transaction to
+    //finish because we may as well spend the time calculating the next line. When that is done, we can call
+    //send_line_finish, which will wait for the transfers to be done and check their status.
+}
+
+
+
+//static void send_lines(spi_device_handle_t spi, int ypos, uint16_t *linedata)
+//void ili9431_bitmap(spi_device_handle_t spi, int32_t x1, int32_t y1, int32_t x2, int32_t y2, uint16_t *bitmap) //, lv_color_t color)
+void ili9431_bitmap(spi_device_handle_t spi, int32_t x1, int32_t y1, int32_t w, int32_t h, uint16_t *bitmap) //,
+{
+    esp_err_t ret;
+    int x;
+    /* Transaction descriptors. Declared static so they're not allocated on the */
+    /* stack; we need this memory even when this function is finished because */
+    /* the SPI driver needs access to it even while we're already calculating */
+    /* the next line. */
+    int32_t x2 = x1 + w - 1;
+    int32_t y2 = y1 + h - 1;
+
+    static spi_transaction_t trans[6];
+
+    /* In theory, it's better to initialize trans and data only once and hang */
+    /* on to the initialized variables. We allocate them on the stack, so we need */
+    /* to re-init them each call. */
+    for (x=0; x<6; x++) {
+        memset(&trans[x], 0, sizeof(spi_transaction_t)); // set everything to +
+        if ((x&1)==0) {
+            //Even transfers are commands
+            trans[x].length=8;
+            trans[x].user=(void*)0;
+        } else {
+            //Odd transfers are data
+            trans[x].length=8*4;
+            trans[x].user=(void*)1;
+        }
+        trans[x].flags=SPI_TRANS_USE_TXDATA;
+    }
+
+    //uint32_t size = (x2 - x1 + 1) * (y2 - y1 + 1);
+    uint32_t size = w * h;
+    //uint16_t buffer[size];
+
+    // for (uint32_t i = 0; i < size; i++) {
+    //     buffer[i] = colour;
+    // }
+
+    //buffer = alien;
+
+    trans[0].tx_data[0] = 0x2A;           //Column Address Set
+    trans[1].tx_data[0] = x1 >> 8;              //Start Col High
+    trans[1].tx_data[1] = x1 & 0xff;              //Start Col Low
+    trans[1].tx_data[2] = x2 >> 8;       //End Col High
+    trans[1].tx_data[3] = x2 &0xff;     //End Col Low
+    trans[2].tx_data[0] = 0x2B;           //Page address set
+    trans[3].tx_data[0] = y1 >> 8;        //Start page high
+    trans[3].tx_data[1] = y1 & 0xff;      //start page low
+    trans[3].tx_data[2] = y2 >> 8;    //end page high
+    trans[3].tx_data[3] = y2 &0xff;  //end page low
+    trans[4].tx_data[0]=0x2C;           //memory write
+    trans[5].tx_buffer = bitmap;        //finally send the line data
+    trans[5].length= size * 2 * 8; //320*2*8*PARALLEL_LINES;          //Data length, in bits
+    trans[5].flags=0; //undo SPI_TRANS_USE_TXDATA flag
+
+    //Queue all transactions.
+    for (x=0; x<6; x++) {
+        ret=spi_device_queue_trans(spi, &trans[x], portMAX_DELAY);
+        assert(ret==ESP_OK);
+    }
+
+    //When we are here, the SPI driver is busy (in the background) getting the transactions sent. That happens
+    //mostly using DMA, so the CPU doesn't have much to do here. We're not going to wait for the transaction to
+    //finish because we may as well spend the time calculating the next line. When that is done, we can call
+    //send_line_finish, which will wait for the transfers to be done and check their status.
+}
+
+
+
+
 static void send_line_finish(spi_device_handle_t spi)
 {
     spi_transaction_t *rtrans;
@@ -301,45 +440,48 @@ static void send_line_finish(spi_device_handle_t spi)
 }
 
 
-//Simple routine to generate some patterns and send them to the LCD. Don't expect anything too
-//impressive. Because the SPI driver handles transactions in the background, we can calculate the next line
-//while the previous one is being sent.
-static void display_pretty_colors(spi_device_handle_t spi)
+void test_task(void *params)
 {
-    uint16_t *lines[2];
-    //Allocate memory for the pixel buffers
-    for (int i=0; i<2; i++) {
-        lines[i]=heap_caps_malloc(320*PARALLEL_LINES*sizeof(uint16_t), MALLOC_CAP_DMA);
-        assert(lines[i]!=NULL);
-    }
-    int frame=0;
-    //Indexes of the line currently being sent to the LCD and the line we're calculating.
-    int sending_line=-1;
-    int calc_line=0;
+    uint16_t count = 0;
+    uint16_t x1;
+    uint16_t x2;
+    uint16_t y1;
+    uint16_t y2;
+    uint16_t colour;
+
+    //HEAP_CHANGE_START();
 
     while(1) {
-        frame++;
-        for (int y=0; y<240; y+=PARALLEL_LINES) {
-            //Calculate a line.
-            pretty_effect_calc_lines(lines[calc_line], y, frame, PARALLEL_LINES);
-            //Finish up the sending process of the previous line, if any
-            if (sending_line!=-1) send_line_finish(spi);
-            //Swap sending_line and calc_line
-            sending_line=calc_line;
-            calc_line=(calc_line==1)?0:1;
-            //Send the line we currently calculated.
-            send_lines(spi, y, lines[sending_line]);
-            //The line set is queued up for sending now; the actual sending happens in the
-            //background. We can go on to calculate the next line set as long as we do not
-            //touch line[sending_line]; the SPI sending process is still reading from that.
+        x1 = (rand() % 310);
+        x2 = x1 + 15;
+        y1 = (rand() % 230);
+        y2 = y1 + 9;
+        colour = rand() % 0xffff;
+
+        if (x1 > x2) {
+            swap(x1, x2);
         }
+
+        if (y1 > y2) {
+            swap(y1, y2);
+        }
+        //ili9431_fill(spi, x1, y1, x2, y2, colour); //, lv_color_t color)
+        ili9431_bitmap(spi, x1, y1, 16, 10, &alien2); //, lv_color_t color)
+        /* Do some stuff here. */
+        send_line_finish(spi);
+        //ESP_LOGD(TAG, "Wheee %d!!", count++);
+        //HEAP_CHANGE_END("***");
+        //vTaskDelay(500 / portTICK_RATE_MS);
     }
+
+    vTaskDelete(NULL);
 }
 
-void app_main()
+
+void spi_master_init()
 {
     esp_err_t ret;
-    spi_device_handle_t spi;
+    //spi_device_handle_t spi;
     spi_bus_config_t buscfg={
         .miso_io_num=PIN_NUM_MISO,
         .mosi_io_num=PIN_NUM_MOSI,
@@ -365,12 +507,22 @@ void app_main()
     //Attach the LCD to the SPI bus
     ret=spi_bus_add_device(HSPI_HOST, &devcfg, &spi);
     ESP_ERROR_CHECK(ret);
-    //Initialize the LCD
-    lcd_init(spi);
-    //Initialize the effect displayed
-    ret=pretty_effect_init();
-    ESP_ERROR_CHECK(ret);
+}
 
-    //Go do nice stuff.
-    display_pretty_colors(spi);
+void app_main()
+{
+
+    //Initialize the LCD
+    spi_master_init();
+    lcd_init(spi);
+
+
+    xTaskCreatePinnedToCore(test_task, "test", 2048, NULL, 1, NULL, 1);
+
+    // //Initialize the effect displayed
+    // ret=pretty_effect_init();
+    // ESP_ERROR_CHECK(ret);
+
+    // //Go do nice stuff.
+    // display_pretty_colors(spi);
 }
