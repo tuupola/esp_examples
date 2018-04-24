@@ -7,7 +7,7 @@
 #include "driver/spi_master.h"
 #include "soc/gpio_struct.h"
 #include "driver/gpio.h"
-#include <esp_log.h>
+#include "esp_log.h"
 
 #include "ili9341.h"
 
@@ -42,34 +42,34 @@ DRAM_ATTR static const lcd_init_cmd_t lcd_init_cmds[]={
     {0, {0}, 0xff},
 };
 
-//Send a command to the LCD. Uses spi_device_transmit, which waits until the transfer is complete.
+/* Uses spi_device_transmit, which waits until the transfer is complete. */
 void ili9341_command(spi_device_handle_t spi, const uint8_t command)
 {
     spi_transaction_t transaction;
 
-    memset(&transaction, 0, sizeof(transaction));   //Zero out the transaction
-    transaction.length = 8;                         //Command is 8 bits
-    transaction.tx_buffer = &command;               //The data is the cmd itself
-    transaction.user = (void*)0;                    //D/C needs to be set to 0
-    ESP_ERROR_CHECK(spi_device_transmit(spi, &transaction));  //Transmit!
+    memset(&transaction, 0, sizeof(transaction));
+    transaction.length = 1 * 8; /* Command is 1 byte ie 8 bits. */
+    transaction.tx_buffer = &command; /* The data is the cmd itself. */
+    transaction.user = (void*)0; /* D/C needs to be set to 0. */
+    ESP_ERROR_CHECK(spi_device_transmit(spi, &transaction));
 }
 
-//Send data to the LCD. Uses spi_device_transmit, which waits until the transfer is complete.
+/* Uses spi_device_transmit, which waits until the transfer is complete. */
 static void ili9341_data(spi_device_handle_t spi, const uint8_t *data, uint16_t length)
 {
     spi_transaction_t transaction;
 
     if (0 == length) { return; };
-    memset(&transaction, 0, sizeof(transaction));   //Zero out the transaction
-    transaction.length = length * 8;                    //Len is in bytes, transaction length is in bits.
-    transaction.tx_buffer = data;                     //Data
-    transaction.user = (void*)1;                      //D/C needs to be set to 1
-    ESP_ERROR_CHECK(spi_device_transmit(spi, &transaction));  //Transmit!
+    memset(&transaction, 0, sizeof(transaction));
+    transaction.length = length * 8; /* Length in bits. */
+    transaction.tx_buffer = data;
+    transaction.user = (void*)1; /* D/C needs to be set to 1. */
+    ESP_ERROR_CHECK(spi_device_transmit(spi, &transaction));
 }
 
 
-//This function is called (in irq context!) just before a transmission starts. It will
-//set the D/C line to the value indicated in the user field.
+/* This function is called (in irq context!) just before a transmission starts. */
+/* It will set the D/C line to the value indicated in the user field. */
 void ili9341_pre_callback(spi_transaction_t *transaction)
 {
     int dc=(int)transaction->user;
@@ -80,11 +80,11 @@ void ili9341_wait(spi_device_handle_t spi)
 {
     spi_transaction_t *rtrans;
     esp_err_t ret;
-    //Wait for all 6 transactions to be done and get back the results.
+
+    /* TODO: This should be all transactions. */
     for (int x=0; x<6; x++) {
-        ret=spi_device_get_trans_result(spi, &rtrans, portMAX_DELAY);
-        assert(ret==ESP_OK);
-        //We could inspect rtrans now if we received any info back. The LCD is treated as write-only, though.
+        ESP_ERROR_CHECK(spi_device_get_trans_result(spi, &rtrans, portMAX_DELAY));
+        /* Do something with the result. */
     }
 }
 
@@ -126,38 +126,25 @@ void ili9431_bitmap(spi_device_handle_t spi, uint16_t x1, uint16_t y1, uint16_t 
     int32_t x2 = x1 + w - 1;
     int32_t y2 = y1 + h - 1;
 
-    /* Transaction descriptors. Declared static so they're not allocated on the */
-    /* stack; we need this memory even when this function is finished because */
-    /* the SPI driver needs access to it even while we're already calculating */
-    /* the next line. */
     static spi_transaction_t trans[6];
+    uint32_t size = w * h;
 
     /* In theory, it's better to initialize trans and data only once and hang */
     /* on to the initialized variables. We allocate them on the stack, so we need */
     /* to re-init them each call. */
     for (x = 0; x < 6; x++) {
-        memset(&trans[x], 0, sizeof(spi_transaction_t)); // set everything to +
+        memset(&trans[x], 0, sizeof(spi_transaction_t));
         if (0 == (x&1)) {
-            //Even transfers are commands
+            /* Even transfers are commands. */
             trans[x].length = 8;
             trans[x].user = (void*)0;
         } else {
-            //Odd transfers are data
+            /* Odd transfers are data. */
             trans[x].length = 8 * 4;
             trans[x].user = (void*)1;
         }
         trans[x].flags = SPI_TRANS_USE_TXDATA;
     }
-
-    //uint32_t size = (x2 - x1 + 1) * (y2 - y1 + 1);
-    uint32_t size = w * h;
-    //uint16_t buffer[size];
-
-    // for (uint32_t i = 0; i < size; i++) {
-    //     buffer[i] = colour;
-    // }
-
-    //buffer = alien;
 
     trans[0].tx_data[0] = 0x2A;           //Column Address Set
     trans[1].tx_data[0] = x1 >> 8;              //Start Col High
@@ -168,19 +155,22 @@ void ili9431_bitmap(spi_device_handle_t spi, uint16_t x1, uint16_t y1, uint16_t 
     trans[3].tx_data[0] = y1 >> 8;        //Start page high
     trans[3].tx_data[1] = y1 & 0xff;      //start page low
     trans[3].tx_data[2] = y2 >> 8;    //end page high
-    trans[3].tx_data[3] = y2 &0xff;  //end page low
+    trans[3].tx_data[3] = y2 & 0xff;  //end page low
     trans[4].tx_data[0] = 0x2C;           //memory write
     trans[5].tx_buffer = bitmap;        //finally send the line data
     trans[5].length = size * 2 * 8; //320*2*8*PARALLEL_LINES;          //Data length, in bits
     trans[5].flags = 0; //undo SPI_TRANS_USE_TXDATA flag
 
-    //Queue all transactions.
-    for (x = 0; x < 6; x++) {
+    for (x = 0; x <= 5; x++) {
         ESP_ERROR_CHECK(spi_device_queue_trans(spi, &trans[x], portMAX_DELAY));
     }
 
-    //When we are here, the SPI driver is busy (in the background) getting the transactions sent. That happens
-    //mostly using DMA, so the CPU doesn't have much to do here. We're not going to wait for the transaction to
-    //finish because we may as well spend the time calculating the next line. When that is done, we can call
-    //send_line_finish, which will wait for the transfers to be done and check their status.
+    /* Could do stuff here... */
+
+    ili9341_wait(spi);
+}
+
+void ili9431_putpixel(spi_device_handle_t spi, uint16_t x1, uint16_t y1, uint16_t colour)
+{
+    ili9431_bitmap(spi, x1, y1, 1, 1, &colour);
 }
