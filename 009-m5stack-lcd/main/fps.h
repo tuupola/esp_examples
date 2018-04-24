@@ -30,26 +30,26 @@ SOFTWARE.
 
 static inline float fps()
 {
-	static uint32_t ticks; /* TickType_t */
-	static uint32_t start; /* TickType_t */
-	static uint32_t frames = 1;
-	static float current = 0;
+    static uint32_t ticks; /* TickType_t */
+    static uint32_t start; /* TickType_t */
+    static uint32_t frames = 1;
+    static float current = 0;
     static bool firstrun = true;
 
-	float smoothing = 0.9; /* Larger value is more smoothing. */
-	float measured = 0;
+    float smoothing = 0.9; /* Larger value is more smoothing. */
+    float measured = 0;
 
-	if (firstrun) {
-		start = xTaskGetTickCount();
-		firstrun = false;
-	}
-	frames++;
+    if (firstrun) {
+        start = xTaskGetTickCount();
+        firstrun = false;
+    }
+    frames++;
 
-	ticks = xTaskGetTickCount() - start;
-	measured = frames / (float) ticks * pdMS_TO_TICKS(1000);
-	measured = (measured * smoothing) + (current * (1.0 - smoothing));
+    ticks = xTaskGetTickCount() - start;
+    measured = frames / (float) ticks * pdMS_TO_TICKS(1000);
+    measured = (measured * smoothing) + (current * (1.0 - smoothing));
 
-	return measured;
+    return measured;
 }
 
 #endif
