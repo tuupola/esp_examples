@@ -219,11 +219,11 @@ void app_main()
     spi_master_init(&g_spi);
     ili9341_init(&g_spi);
 
-    //xTaskCreatePinnedToCore(alien_task, "Alien task", 2048, NULL, 1, NULL, 1);
+    xTaskCreatePinnedToCore(alien_task, "Alien task", 2048, NULL, 1, NULL, 1);
     //xTaskCreatePinnedToCore(pixel_task, "Pixel task", 2048, NULL, 1, NULL, 1);
     //xTaskCreatePinnedToCore(line_task, "Line task", 2048, NULL, 1, NULL, 1);
     //xTaskCreatePinnedToCore(rectangle_task, "Rectangle task", 4096, NULL, 1, NULL, 1);
-    xTaskCreatePinnedToCore(fill_rectangle_task, "Fill rectangle task", 153600 + 2048, NULL, 1, NULL, 1);
+    //xTaskCreatePinnedToCore(fill_rectangle_task, "Fill rectangle task", 153600 + 2048, NULL, 1, NULL, 1);
     xTaskCreatePinnedToCore(fps_task, "FPS task", 2048, NULL, 1, NULL, 1);
     //xTaskCreatePinnedToCore(spi_queue_task, "SPI queue task", 2048, NULL, 1, NULL, 1);
 }
