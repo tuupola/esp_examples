@@ -45,7 +45,7 @@ void pln_ll_put_pixel(uint16_t x1, uint16_t y1, uint16_t color)
 
 void pln_ll_put_bitmap(uint16_t x1, uint16_t y1, uint16_t w, uint16_t h, uint16_t *bitmap)
 {
-    ili9431_bitmap(g_spi, x1, y1, w, h, &bitmap);
+    ili9431_bitmap(g_spi, x1, y1, w, h, bitmap);
 }
 
 void pln_ll_draw_hline(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t colour)
