@@ -35,10 +35,13 @@ SOFTWARE.
 // 	ili9431_putpixel(g_spi, x1, y1, color);
 // }
 
-void pod_ll_putpixel(uint16_t x1, uint16_t y1, uint16_t colour)
+void pod_ll_putpixel(uint16_t x0, uint16_t y0, uint16_t colour)
 {
-    uint16_t *location = g_fb.buffer + g_fb.pitch * y1 + g_fb.bpp * x1;
-	*location = colour;
+    uint16_t *ptr = g_fb.buffer + g_fb.pitch * y0 + g_fb.bpp * x0;
+
+    if((x0 < g_fb.width) && (y0 < g_fb.height)) {
+    	*ptr = colour;
+    }
 }
 
 //
