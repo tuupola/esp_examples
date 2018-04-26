@@ -284,10 +284,10 @@ void app_main()
             //xTaskCreatePinnedToCore(put_text_task, "Put text task", 2048, NULL, 1, NULL, 1);
             //xTaskCreatePinnedToCore(put_char_task, "Put char task", 2048, NULL, 1, NULL, 1);
             //xTaskCreatePinnedToCore(alien_task, "Alien task", 2048, NULL, 1, NULL, 1);
-            //xTaskCreatePinnedToCore(pixel_task, "Pixel task", 2048, NULL, 1, NULL, 1);
+            xTaskCreatePinnedToCore(pixel_task, "Pixel task", 2048, NULL, 1, NULL, 1);
             //xTaskCreatePinnedToCore(line_task, "Line task", 2048, NULL, 1, NULL, 1);
             //xTaskCreatePinnedToCore(rectangle_task, "Rectangle task", 4096, NULL, 1, NULL, 1);
-            xTaskCreatePinnedToCore(fill_rectangle_task, "Fill rectangle task", 2048, NULL, 1, NULL, 1);
+            //xTaskCreatePinnedToCore(fill_rectangle_task, "Fill rectangle task", 2048, NULL, 1, NULL, 1);
             xTaskCreatePinnedToCore(debug_task, "Debug task", 4096, NULL, 1, NULL, 1);
         }
 

@@ -1,5 +1,9 @@
 /*
 
+This code is based on Espressif provided SPI Master example which was
+released to Public Domain: https://goo.gl/ksC2Ln
+
+
 Copyright (c) 2018 Mika Tuupola
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -21,6 +25,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 */
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
