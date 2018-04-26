@@ -39,16 +39,9 @@ SOFTWARE.
 #include "ili9341.h"
 #include "alien.h"
 #include "framebuffer.h"
-#include "plankton.h"
+#include "copepod.h"
 
 static const char *TAG = "main";
-
-#define swap(x,y) do \
-    { unsigned char swap_temp[sizeof(x) == sizeof(y) ? (signed)sizeof(x) : -1]; \
-        memcpy(swap_temp,&y,sizeof(x)); \
-        memcpy(&y,&x,       sizeof(x)); \
-        memcpy(&x,swap_temp,sizeof(x)); \
-    } while (0)
 
 spi_device_handle_t g_spi;
 SemaphoreHandle_t g_mutex;
@@ -56,7 +49,6 @@ float g_fps;
 
 #define FB_WIDTH    320
 #define FB_HEIGHT   240
-
 
 framebuffer_t g_fb = {
     .width = FB_WIDTH,
@@ -74,7 +66,7 @@ void fps_task(void *params)
     while (1) {
         colour = RGB565(0, 0, 255);
         sprintf(message, " %.*f FPS ", 1, g_fps);
-        pln_put_text(message, 232, 0, colour);
+        pod_puttext(message, 232, 0, colour);
 
         ESP_LOGI(TAG, "FPS: %f", g_fps);
         vTaskDelay(1000 / portTICK_RATE_MS);
@@ -93,7 +85,7 @@ void alien_task(void *params)
         x1 = (rand() % 310);
         y1 = (rand() % 220) + 10;
 
-        pln_put_bitmap(x1, y1, 16, 10, &alien2);
+        pod_blit(x1, y1, 16, 10, &alien2);
         //vTaskDelay(500 / portTICK_RATE_MS);
     }
 
@@ -113,7 +105,7 @@ void put_char_task(void *params)
         colour = rand() % 0xffff;
         ascii = rand() % 127;
 
-        pln_put_char(ascii, x1, y1, colour);
+        pod_putchar(ascii, x1, y1, colour);
         //vTaskDelay(10 / portTICK_RATE_MS);
     }
 
@@ -132,7 +124,7 @@ void put_text_task(void *params)
         y1 = (rand() % 222) + 10;
         colour = rand() % 0xffff;
 
-        pln_put_text("YO! MTV Raps", x1, y1, colour);
+        pod_puttext("YO! MTV Raps", x1, y1, colour);
         //vTaskDelay(10 / portTICK_RATE_MS);
     }
 
@@ -150,7 +142,7 @@ void pixel_task(void *params)
         y1 = (rand() % 230) + 10;
         colour = rand() % 0xffff;
 
-        pln_put_pixel(x1, y1, colour);
+        pod_putpixel(x1, y1, colour);
         //vTaskDelay(10 / portTICK_RATE_MS);
     }
 
@@ -172,7 +164,7 @@ void line_task(void *params)
         y2 = (rand() % 230) + 10;
         colour = rand() % 0xffff;
 
-        pln_line(x1, y1, x2, y2, colour);
+        pod_line(x1, y1, x2, y2, colour);
         //vTaskDelay(500 / portTICK_RATE_MS);
     }
 
@@ -199,7 +191,7 @@ void rectangle_task(void *params)
         x2 = 319;
         y2 = 239;
 
-        pln_rectangle(x1, y1, x2, y2, colour);
+        pod_rectangle(x1, y1, x2, y2, colour);
         vTaskDelay(10 / portTICK_RATE_MS);
     }
 
@@ -222,7 +214,7 @@ void fill_rectangle_task(void *params)
         y1 = (rand() % 230) + 10;
         y2 = (rand() % 230) + 10;
 
-        pln_fillrectangle(x1, y1, x2, y2, colour);
+        pod_fillrectangle(x1, y1, x2, y2, colour);
         //vTaskDelay(20 / portTICK_RATE_MS);
     }
 
@@ -294,8 +286,8 @@ void app_main()
             //xTaskCreatePinnedToCore(alien_task, "Alien task", 2048, NULL, 1, NULL, 1);
             //xTaskCreatePinnedToCore(pixel_task, "Pixel task", 2048, NULL, 1, NULL, 1);
             //xTaskCreatePinnedToCore(line_task, "Line task", 2048, NULL, 1, NULL, 1);
-            xTaskCreatePinnedToCore(rectangle_task, "Rectangle task", 4096, NULL, 1, NULL, 1);
-            //xTaskCreatePinnedToCore(fill_rectangle_task, "Fill rectangle task", 2048, NULL, 1, NULL, 1);
+            //xTaskCreatePinnedToCore(rectangle_task, "Rectangle task", 4096, NULL, 1, NULL, 1);
+            xTaskCreatePinnedToCore(fill_rectangle_task, "Fill rectangle task", 2048, NULL, 1, NULL, 1);
             xTaskCreatePinnedToCore(debug_task, "Debug task", 4096, NULL, 1, NULL, 1);
         }
 
