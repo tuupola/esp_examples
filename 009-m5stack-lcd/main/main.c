@@ -38,6 +38,7 @@ SOFTWARE.
 #include "spi.h"
 #include "ili9341.h"
 #include "alien.h"
+#include "framebuffer.h"
 #include "plankton.h"
 
 static const char *TAG = "main";
@@ -53,6 +54,16 @@ spi_device_handle_t g_spi;
 SemaphoreHandle_t g_mutex;
 float g_fps;
 
+#define FB_WIDTH    320
+#define FB_HEIGHT   240
+
+
+framebuffer_t g_fb = {
+    .width = FB_WIDTH,
+    .height = FB_HEIGHT,
+    .depth = 16,
+};
+
 void fps_task(void *params)
 {
     uint16_t x1;
@@ -63,18 +74,14 @@ void fps_task(void *params)
     while (1) {
         colour = RGB565(0, 0, 255);
         sprintf(message, " %.*f FPS ", 1, g_fps);
-
-        xSemaphoreTake(g_mutex, portMAX_DELAY);
         pln_put_text(message, 232, 0, colour);
-        xSemaphoreGive(g_mutex);
 
         ESP_LOGI(TAG, "FPS: %f", g_fps);
-        vTaskDelay(500 / portTICK_RATE_MS);
+        vTaskDelay(1000 / portTICK_RATE_MS);
     }
     vTaskDelete(NULL);
 }
 
-/* Random -> 4388.220703 sprites/s @48khz */
 void alien_task(void *params)
 {
     uint16_t x1;
@@ -84,30 +91,15 @@ void alien_task(void *params)
 
     while (1) {
         x1 = (rand() % 310);
-        x2 = x1 + 15;
         y1 = (rand() % 220) + 10;
-        y2 = y1 + 9;
 
-        if (x1 > x2) {
-            swap(x1, x2);
-        }
-
-        if (y1 > y2) {
-            swap(y1, y2);
-        }
-
-        xSemaphoreTake(g_mutex, portMAX_DELAY);
-        ili9431_bitmap(g_spi, x1, y1, 16, 10, &alien2);
-        xSemaphoreGive(g_mutex);
-        g_fps = fps();
+        pln_put_bitmap(x1, y1, 16, 10, &alien2);
         //vTaskDelay(500 / portTICK_RATE_MS);
     }
 
     vTaskDelete(NULL);
 }
 
-
-/* Random -> 4230.000000 characters/s @48khz */
 void put_char_task(void *params)
 {
     uint16_t x1;
@@ -116,23 +108,18 @@ void put_char_task(void *params)
     char ascii;
 
     while (1) {
-        x1 = (rand() % 313);
-        y1 = (rand() % 223) + 10;
+        x1 = (rand() % 320);
+        y1 = (rand() % 220) + 10;
         colour = rand() % 0xffff;
         ascii = rand() % 127;
 
-        xSemaphoreTake(g_mutex, portMAX_DELAY);
         pln_put_char(ascii, x1, y1, colour);
-        xSemaphoreGive(g_mutex);
-
-        g_fps = fps();
-        //vTaskDelay(500 / portTICK_RATE_MS);
+        //vTaskDelay(10 / portTICK_RATE_MS);
     }
 
     vTaskDelete(NULL);
 }
 
-/* Random -> 360.922150 YO! MTV Raps/s @48khz */
 void put_text_task(void *params)
 {
     uint16_t x1;
@@ -145,17 +132,13 @@ void put_text_task(void *params)
         y1 = (rand() % 222) + 10;
         colour = rand() % 0xffff;
 
-        xSemaphoreTake(g_mutex, portMAX_DELAY);
         pln_put_text("YO! MTV Raps", x1, y1, colour);
-        xSemaphoreGive(g_mutex);
-        g_fps = fps();
+        //vTaskDelay(10 / portTICK_RATE_MS);
     }
 
     vTaskDelete(NULL);
 }
 
-
-/* Random -> 5541.737793 pixels/s @48khz */
 void pixel_task(void *params)
 {
     uint16_t x1;
@@ -164,21 +147,16 @@ void pixel_task(void *params)
 
     while (1) {
         x1 = (rand() % 320);
-        y1 = (rand() % 240);
+        y1 = (rand() % 230) + 10;
         colour = rand() % 0xffff;
 
-        xSemaphoreTake(g_mutex, portMAX_DELAY);
-        ili9431_putpixel(g_spi, x1, y1, colour);
-        xSemaphoreGive(g_mutex);
-
-        g_fps = fps();
-        //vTaskDelay(500 / portTICK_RATE_MS);
+        pln_put_pixel(x1, y1, colour);
+        //vTaskDelay(10 / portTICK_RATE_MS);
     }
 
     vTaskDelete(NULL);
 }
 
-/* Random -> 39.344261 lines/s @48khz */
 void line_task(void *params)
 {
     uint16_t x1;
@@ -190,22 +168,17 @@ void line_task(void *params)
     while (1) {
         x1 = (rand() % 320);
         x2 = (rand() % 320);
-        y1 = (rand() % 240);
-        y2 = (rand() % 320);
+        y1 = (rand() % 230) + 10;
+        y2 = (rand() % 230) + 10;
         colour = rand() % 0xffff;
 
-        xSemaphoreTake(g_mutex, portMAX_DELAY);
-        pln_draw_line(x1, y1, x2, y2, colour);
-        xSemaphoreGive(g_mutex);
-        g_fps = fps();
+        pln_line(x1, y1, x2, y2, colour);
         //vTaskDelay(500 / portTICK_RATE_MS);
     }
 
     vTaskDelete(NULL);
 }
 
-/* Random -> 64.413460 fps @48khz */
-/* 320x240 -> 100.222466 fps @48khz */
 void rectangle_task(void *params)
 {
     uint16_t x1;
@@ -215,10 +188,6 @@ void rectangle_task(void *params)
     uint16_t colour;
 
     while (1) {
-        // x1 = (rand() % 290);
-        // x2 = x1 + 30;
-        // y1 = (rand() % 220);
-        // y2 = y1 + 20;
         colour = rand() % 0xffff;
 
         // x1 = (rand() % 320);
@@ -226,24 +195,17 @@ void rectangle_task(void *params)
         // y1 = (rand() % 240);
         // y2 = (rand() % 320);
         x1 = 0;
-        y1 = 0;
-        x2 = 320;
-        y2 = 240;
+        y1 = 10;
+        x2 = 319;
+        y2 = 239;
 
-        xSemaphoreTake(g_mutex, portMAX_DELAY);
-        pln_draw_rectangle(x1, y1, x2, y2, colour);
-        xSemaphoreGive(g_mutex);
-
-        g_fps = fps();
-
+        pln_rectangle(x1, y1, x2, y2, colour);
         vTaskDelay(10 / portTICK_RATE_MS);
     }
 
     vTaskDelete(NULL);
 }
 
-/* Random -> 146.971924 fps @48khz */
-/* 320x240 -> 29.214964 fps @48khz */
 void fill_rectangle_task(void *params)
 {
     uint16_t x1;
@@ -253,37 +215,41 @@ void fill_rectangle_task(void *params)
     uint16_t colour;
 
     while (1) {
-        // x1 = (rand() % 200);
-        // x2 = x1 + 10;
-        // y1 = (rand() % 220);
-        // y2 = y1 + 10;
         colour = rand() % 0xffff;
 
-        // x1 = 0;
-        // y1 = 0;
-        // x2 = 320;
-        // y2 = 240;
         x1 = (rand() % 320);
         x2 = (rand() % 320);
         y1 = (rand() % 230) + 10;
         y2 = (rand() % 230) + 10;
 
-        xSemaphoreTake(g_mutex, portMAX_DELAY);
-        pln_fill_rectangle(x1, y1, x2, y2, colour);
-        xSemaphoreGive(g_mutex);
-
-        g_fps = fps();
-        //vTaskDelay(500 / portTICK_RATE_MS);
+        pln_fillrectangle(x1, y1, x2, y2, colour);
+        //vTaskDelay(20 / portTICK_RATE_MS);
     }
 
     vTaskDelete(NULL);
 }
 
-void spi_queue_task(void *params)
+void framebuffer_task(void *params)
 {
     while (1) {
-        ili9341_wait(g_spi);
-        vTaskDelay(10 / portTICK_RATE_MS);
+        xSemaphoreTake(g_mutex, portMAX_DELAY);
+        ili9431_bitmap(g_spi, 0, 0, FB_WIDTH, FB_HEIGHT, g_fb.buffer);
+        xSemaphoreGive(g_mutex);
+        g_fps = fps();
+        //vTaskDelay(1 / portTICK_RATE_MS);
+    }
+
+    vTaskDelete(NULL);
+
+}
+
+void debug_task(void *params)
+{
+    while (1) {
+        ESP_LOGD(
+            TAG, "heap: %d", esp_get_free_heap_size()
+        );
+        vTaskDelay(1000 / portTICK_RATE_MS);
     }
 
     vTaskDelete(NULL);
@@ -291,24 +257,47 @@ void spi_queue_task(void *params)
 
 void app_main()
 {
-    ESP_LOGD(TAG, "Wheeee!");
+    ESP_LOGI(
+        TAG, "SDK version: %s, heap: %d",
+        esp_get_idf_version(), esp_get_free_heap_size()
+    );
+
     spi_master_init(&g_spi);
     ili9341_init(&g_spi);
 
     g_mutex = xSemaphoreCreateMutex();
 
-    if (NULL != g_mutex) {
-        xTaskCreatePinnedToCore(fps_task, "FPS task", 4096, NULL, 2, NULL, 1);
+    framebuffer_init(&g_fb);
 
+    ESP_LOGI(
+        TAG, "bpp: %d width: %d height: %d depth: %d pitch: %d size: %d",
+        g_fb.bpp, g_fb.width, g_fb.height, g_fb.depth, g_fb.pitch, g_fb.size
+    );
 
-        //xTaskCreatePinnedToCore(put_text_task, "Put text task", 153600 + 2048, NULL, 1, NULL, 1);
-        //xTaskCreatePinnedToCore(put_char_task, "Put char task", 2048, NULL, 1, NULL, 1);
-        //xTaskCreatePinnedToCore(alien_task, "Alien task", 2048, NULL, 1, NULL, 1);
-        //xTaskCreatePinnedToCore(pixel_task, "Pixel task", 2048, NULL, 1, NULL, 1);
-        //xTaskCreatePinnedToCore(line_task, "Line task", 2048, NULL, 1, NULL, 1);
-        //xTaskCreatePinnedToCore(rectangle_task, "Rectangle task", 4096, NULL, 1, NULL, 1);
-        xTaskCreatePinnedToCore(fill_rectangle_task, "Fill rectangle task", 153600 + 2048, NULL, 1, NULL, 1);
+    ESP_LOGI(
+        TAG, "ESP-IDF version: %s, heap: %d",
+        esp_get_idf_version(), esp_get_free_heap_size()
+    );
+
+    if (NULL == g_fb.buffer) {
+        ESP_LOGE(TAG, "Malloc failed.");
+    } else {
+        memset(g_fb.buffer, 0x00, g_fb.size);
+        //ESP_LOG_BUFFER_HEXDUMP(TAG, buffer, g_fb.size, ESP_LOG_INFO);
+        ESP_LOG_BUFFER_HEXDUMP(TAG, g_fb.buffer, 16 * 8, ESP_LOG_INFO);
+
+        if (NULL != g_mutex) {
+            xTaskCreatePinnedToCore(fps_task, "FPS task", 4096, NULL, 2, NULL, 1);
+            xTaskCreatePinnedToCore(framebuffer_task, "Framebuffer task", 8192, NULL, 1, NULL, 0);
+            //xTaskCreatePinnedToCore(put_text_task, "Put text task", 2048, NULL, 1, NULL, 1);
+            //xTaskCreatePinnedToCore(put_char_task, "Put char task", 2048, NULL, 1, NULL, 1);
+            //xTaskCreatePinnedToCore(alien_task, "Alien task", 2048, NULL, 1, NULL, 1);
+            //xTaskCreatePinnedToCore(pixel_task, "Pixel task", 2048, NULL, 1, NULL, 1);
+            //xTaskCreatePinnedToCore(line_task, "Line task", 2048, NULL, 1, NULL, 1);
+            xTaskCreatePinnedToCore(rectangle_task, "Rectangle task", 4096, NULL, 1, NULL, 1);
+            //xTaskCreatePinnedToCore(fill_rectangle_task, "Fill rectangle task", 2048, NULL, 1, NULL, 1);
+            xTaskCreatePinnedToCore(debug_task, "Debug task", 4096, NULL, 1, NULL, 1);
+        }
+
     }
-
-    //xTaskCreatePinnedToCore(spi_queue_task, "SPI queue task", 2048, NULL, 1, NULL, 1);
 }

@@ -105,7 +105,7 @@ void ili9341_wait(spi_device_handle_t spi)
     esp_err_t ret;
 
     /* TODO: This should be all transactions. */
-    for (int x=0; x<6; x++) {
+    for (uint8_t i = 0; i <= 5; i++) {
         ESP_ERROR_CHECK(spi_device_get_trans_result(spi, &rtrans, portMAX_DELAY));
         /* Do something with the result. */
     }
@@ -197,3 +197,4 @@ void ili9431_putpixel(spi_device_handle_t spi, uint16_t x1, uint16_t y1, uint16_
 {
     ili9431_bitmap(spi, x1, y1, 1, 1, &colour);
 }
+
