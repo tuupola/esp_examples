@@ -35,12 +35,12 @@ SOFTWARE.
 // 	ili9431_putpixel(g_spi, x1, y1, color);
 // }
 
-void pod_ll_putpixel(uint16_t x0, uint16_t y0, uint16_t colour)
+void pod_ll_putpixel(uint16_t x0, uint16_t y0, uint16_t color)
 {
     uint16_t *ptr = g_fb.buffer + g_fb.pitch * y0 + g_fb.bpp * x0;
 
     if((x0 < g_fb.width) && (y0 < g_fb.height)) {
-    	*ptr = colour;
+    	*ptr = color;
     }
 }
 
@@ -65,12 +65,12 @@ void pod_ll_blit(uint16_t x0, uint16_t y0, uint16_t w, uint16_t h, uint16_t *bit
     }
 }
 
-void pod_ll_hline(uint16_t x1, uint16_t y1, uint16_t width, uint16_t colour)
+void pod_ll_hline(uint16_t x1, uint16_t y1, uint16_t width, uint16_t color)
 {
     uint16_t bitmap[width];
 
     for (uint16_t i = 0; i < width; i++) {
-        ((uint16_t *)bitmap)[i] = colour;
+        ((uint16_t *)bitmap)[i] = color;
     }
 
     pod_ll_blit(x1, y1, width, 1, &bitmap);
@@ -78,12 +78,12 @@ void pod_ll_hline(uint16_t x1, uint16_t y1, uint16_t width, uint16_t colour)
     //ili9431_bitmap(g_spi, x1, y1, width, 1, &bitmap);
 }
 
-void pod_ll_vline(uint16_t x1, uint16_t y1, uint16_t height, uint16_t colour)
+void pod_ll_vline(uint16_t x1, uint16_t y1, uint16_t height, uint16_t color)
 {
     uint16_t bitmap[height];
 
     for (uint16_t i = 0; i < height; i++) {
-        ((uint16_t *)bitmap)[i] = colour;
+        ((uint16_t *)bitmap)[i] = color;
     }
 
     pod_ll_blit(x1, y1, height, 1, &bitmap);

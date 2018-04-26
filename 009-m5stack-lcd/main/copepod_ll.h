@@ -33,8 +33,7 @@ SOFTWARE.
 extern spi_device_handle_t g_spi;
 extern framebuffer_t g_fb;
 
-//void pln_ll_put_pixel(uint16_t x1, uint16_t y1, uint16_t color);
-void pln_ll_put_pixel(uint16_t x1, uint16_t y1, uint16_t color);
-void pln_ll_put_bitmap(uint16_t x1, uint16_t y1, uint16_t w, uint16_t h, uint16_t *bitmap);
-void pln_ll_draw_hline(uint16_t x1, uint16_t y1, uint16_t w, uint16_t color);
-void pln_ll_draw_vline(uint16_t x1, uint16_t y1, uint16_t h, uint16_t color);
+void pod_ll_putpixel(uint16_t x1, uint16_t y1, uint16_t color);
+void pod_ll_blit(uint16_t x1, uint16_t y1, uint16_t w, uint16_t h, uint16_t *bitmap);
+void pod_ll_hline(uint16_t x1, uint16_t y1, uint16_t w, uint16_t color);
+void pod_ll_vline(uint16_t x1, uint16_t y1, uint16_t h, uint16_t color);
