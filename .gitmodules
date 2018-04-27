@@ -7,3 +7,6 @@
 [submodule "009-m5stack-lcd/components/esp-ili9341"]
 	path = 009-m5stack-lcd/components/esp-ili9341
 	url = git@github.com:tuupola/esp-ili9341.git
+[submodule "009-m5stack-lcd/components/copepod"]
+	path = 009-m5stack-lcd/components/copepod
+	url = git@github.com:tuupola/copepod.git
