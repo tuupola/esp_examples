@@ -4,3 +4,6 @@
 [submodule "008-i2c-sw-master/components/esp32-software-i2c"]
 	path = 008-i2c-sw-master/components/esp32-software-i2c
 	url = git@github.com:tuupola/esp32-software-i2c.git
+[submodule "009-m5stack-lcd/components/esp-ili9341"]
+	path = 009-m5stack-lcd/components/esp-ili9341
+	url = git@github.com:tuupola/esp-ili9341.git
