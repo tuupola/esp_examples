@@ -26,19 +26,17 @@ SOFTWARE.
 #include <stdlib.h>
 #include <string.h>
 
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "driver/spi_master.h"
-#include "esp_log.h"
-//#include "driver/gpio.h"
-//#include "soc/gpio_struct.h"
-//#include "esp_system.h"
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
+#include <driver/spi_master.h>
+#include <esp_log.h>
 
 #include "fps.h"
 #include "spi.h"
 #include "ili9341.h"
 #include "alien.h"
 #include "framebuffer.h"
+#include "font8x8.h"
 #include "copepod.h"
 
 static const char *TAG = "main";
@@ -66,7 +64,7 @@ void fps_task(void *params)
     while (1) {
         colour = RGB565(0, 0, 255);
         sprintf(message, " %.*f FPS ", 1, g_fps);
-        pod_puttext(message, 232, 0, colour);
+        pod_puttext(message, 232, 0, colour, font8x8_basic);
 
         ESP_LOGI(TAG, "FPS: %f", g_fps);
         vTaskDelay(1000 / portTICK_RATE_MS);
@@ -105,8 +103,8 @@ void put_char_task(void *params)
         colour = rand() % 0xffff;
         ascii = rand() % 127;
 
-        pod_putchar(ascii, x1, y1, colour);
-        //vTaskDelay(10 / portTICK_RATE_MS);
+        pod_putchar(ascii, x1, y1, colour, font8x8_basic);
+        //vTaskDelay(1000 / portTICK_RATE_MS);
     }
 
     vTaskDelete(NULL);
@@ -124,7 +122,7 @@ void put_text_task(void *params)
         y1 = (rand() % 222) + 10;
         colour = rand() % 0xffff;
 
-        pod_puttext("YO! MTV Raps", x1, y1, colour);
+        pod_puttext("YO! MTV Raps", x1, y1, colour, font8x8_basic);
         //vTaskDelay(10 / portTICK_RATE_MS);
     }
 
@@ -281,10 +279,10 @@ void app_main()
         if (NULL != g_mutex) {
             xTaskCreatePinnedToCore(fps_task, "FPS task", 4096, NULL, 2, NULL, 1);
             xTaskCreatePinnedToCore(framebuffer_task, "Framebuffer task", 8192, NULL, 1, NULL, 0);
-            //xTaskCreatePinnedToCore(put_text_task, "Put text task", 2048, NULL, 1, NULL, 1);
+            xTaskCreatePinnedToCore(put_text_task, "Put text task", 2048, NULL, 1, NULL, 1);
             //xTaskCreatePinnedToCore(put_char_task, "Put char task", 2048, NULL, 1, NULL, 1);
             //xTaskCreatePinnedToCore(alien_task, "Alien task", 2048, NULL, 1, NULL, 1);
-            xTaskCreatePinnedToCore(pixel_task, "Pixel task", 2048, NULL, 1, NULL, 1);
+            //xTaskCreatePinnedToCore(pixel_task, "Pixel task", 2048, NULL, 1, NULL, 1);
             //xTaskCreatePinnedToCore(line_task, "Line task", 2048, NULL, 1, NULL, 1);
             //xTaskCreatePinnedToCore(rectangle_task, "Rectangle task", 4096, NULL, 1, NULL, 1);
             //xTaskCreatePinnedToCore(fill_rectangle_task, "Fill rectangle task", 2048, NULL, 1, NULL, 1);
