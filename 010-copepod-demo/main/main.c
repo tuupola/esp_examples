@@ -107,8 +107,20 @@ void demo_task(void *params)
     fire_init();
     ESP_LOGI(TAG, "Heap after fire init: %d", esp_get_free_heap_size());
 
-
     while (1) {
+        uint8_t c0 = (rand() % 55) + 100;
+        uint8_t c1 = (rand() % 55) + 100;
+        uint8_t c2 = (rand() % 55) + 100;
+        uint8_t c3 = (rand() % 55) + 100;
+
+        fire_putchar('M', 22, 40, c0, font8x8_basic);
+        fire_putchar('5', 30, 42, c1, font8x8_basic);
+        fire_putchar('S', 38, 40, c2, font8x8_basic);
+        fire_putchar('T', 46, 44, c3, font8x8_basic);
+        fire_putchar('A', 54, 42, c3, font8x8_basic);
+        fire_putchar('C', 62, 44, c3, font8x8_basic);
+        fire_putchar('K', 70, 40, c3, font8x8_basic);
+
         fire_effect(&bitmap);
         //esp_task_wdt_reset();
         /* Blit the fire bitmap scaled up to framebuffer. */

@@ -81,10 +81,10 @@ void fire_effect(bitmap_t *dst)
     uint16_t color;
 
     /* Random bright line in the bottom. */
-    for (uint16_t x = 0; x < FIRE_WIDTH; x++) {
-        color = abs(32768 + rand());
-        g_fire[FIRE_HEIGHT - 1][x] = color;
-    }
+    // for (uint16_t x = 0; x < FIRE_WIDTH; x++) {
+    //     color = abs(32768 + rand());
+    //     g_fire[FIRE_HEIGHT - 1][x] = color;
+    // }
 
     /* The fire effect itself. */
     for(uint16_t y = 0; y < FIRE_HEIGHT - 1; y++) {
@@ -94,7 +94,7 @@ void fire_effect(bitmap_t *dst)
                 + g_fire[(y + 1) % FIRE_HEIGHT][(x) % FIRE_WIDTH]
                 + g_fire[(y + 1) % FIRE_HEIGHT][(x + 1) % FIRE_WIDTH]
                 + g_fire[(y + 2) % FIRE_HEIGHT][(x) % FIRE_WIDTH])
-                * 32) / 129;
+                * 30) / 130;
         }
     }
 
@@ -108,33 +108,20 @@ void fire_effect(bitmap_t *dst)
 }
 
 
-void fire_putchar(char ascii, uint16_t x0, uint16_t y0, uint16_t color, char font[128][8], bitmap_t *dst)
+void fire_putchar(char ascii, uint16_t x0, uint16_t y0, uint8_t color, char font[128][8])
 {
-    bool set;
-    bitmap_t font_bitmap = {
-        .width = 8,
-        .height = 8,
-        .depth = 16,
-    };
-
-    bitmap_init(&font_bitmap);
-
-    uint16_t *ptr = font_bitmap.buffer;
+    uint8_t *ptr = g_fire;
+    ptr += (FIRE_WIDTH * y0) + x0;
 
     for (uint8_t x = 0; x < 8; x++) {
         for (uint8_t y = 0; y < 8; y++) {
-            set = font[(uint8_t)ascii][x] & 1 << y;
+            ptr += 1;
+
+            bool set = font[(uint8_t)ascii][x] & 1 << y;
             if (set) {
-                *(ptr++) = color;
-            } else {
-                *(ptr++) = 0x0000;
+                *(ptr) = color;
             }
         }
+        ptr += FIRE_WIDTH - 8;
     }
-
-    // ESP_LOGD(TAG, "---");
-    // ESP_LOG_BUFFER_HEXDUMP(TAG, font_bitmap.buffer, 8 * 8 * 2, ESP_LOG_DEBUG);
-
-    blit(x0, y0, &font_bitmap, dst);
-    bitmap_destroy(&font_bitmap);
 }
