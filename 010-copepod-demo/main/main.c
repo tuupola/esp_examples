@@ -96,6 +96,7 @@ void demo_task(void *params)
 {
     ESP_LOGI(TAG, "Heap before initialising fire: %d", esp_get_free_heap_size());
 
+    int16_t sx = 100;
     bitmap_t bitmap = {
         .width = FIRE_WIDTH,
         .height = FIRE_HEIGHT,
@@ -108,20 +109,14 @@ void demo_task(void *params)
     ESP_LOGI(TAG, "Heap after fire init: %d", esp_get_free_heap_size());
 
     while (1) {
-        uint8_t c0 = (rand() % 55) + 100;
-        uint8_t c1 = (rand() % 55) + 100;
-        uint8_t c2 = (rand() % 55) + 100;
-        uint8_t c3 = (rand() % 55) + 100;
-
-        fire_putchar('M', 22, 40, c0, font8x8_basic);
-        fire_putchar('5', 30, 42, c1, font8x8_basic);
-        fire_putchar('S', 38, 40, c2, font8x8_basic);
-        fire_putchar('T', 46, 44, c3, font8x8_basic);
-        fire_putchar('A', 54, 42, c3, font8x8_basic);
-        fire_putchar('C', 62, 44, c3, font8x8_basic);
-        fire_putchar('K', 70, 40, c3, font8x8_basic);
-
+        fire_putstring(" IS IT 90'S AGAIN?      HELLO M5STACK!      GREETZ LODE :D", sx, 30, font8x8_basic);
         fire_effect(&bitmap);
+
+        sx = sx - 1;
+        if (sx < -440) {
+            sx = FIRE_WIDTH - 8;
+        }
+
         //esp_task_wdt_reset();
         /* Blit the fire bitmap scaled up to framebuffer. */
         pod_scale_blit(0, 20, FRAMEBUFFER_WIDTH, FRAMEBUFFER_HEIGHT - 20, &bitmap);

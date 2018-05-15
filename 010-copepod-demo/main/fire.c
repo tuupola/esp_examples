@@ -2,8 +2,8 @@
 
 Adapted from Lode's classic fire tutorial: http://lodev.org/cgtutor/fire.html
 
-Copyright (c) 2004-2007, Lode Vandevenne
-Copyright (c) 2018, Mika Tuupola
+Copyright (c) 2004-2007 Lode Vandevenne
+Copyright (c) 2018 Mika Tuupola
 
 All rights reserved.
 
@@ -33,6 +33,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <math.h>
 
 #include <string.h>
 #include <stdio.h>
@@ -46,14 +47,12 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "bitmap.h"
 #include "fire.h"
 
-static const char *TAG = "fire";
 static uint16_t g_palette[256];
 static uint8_t g_fire[FIRE_HEIGHT][FIRE_WIDTH];
 
 void fire_init(void)
 {
     uint16_t color;
-    uint8_t r, g, b;
     hsl_t hsl;
     rgb_t rgb;
 
@@ -69,7 +68,7 @@ void fire_init(void)
         hsl2rgb(&hsl, &rgb);
 
         color = RGB565(rgb.r, rgb.g, rgb.b);
-        g_palette[x] = bswap_16(color);
+        g_palette[x] = BSWAP_16(color);
     }
 
     /* Clear the fire. */
@@ -78,11 +77,9 @@ void fire_init(void)
 
 void fire_effect(bitmap_t *dst)
 {
-    uint16_t color;
-
-    /* Random bright line in the bottom. */
+    // /* Random bright line in the bottom. */
     // for (uint16_t x = 0; x < FIRE_WIDTH; x++) {
-    //     color = abs(32768 + rand());
+    //     uint8_t color = abs(32768 + rand());
     //     g_fire[FIRE_HEIGHT - 1][x] = color;
     // }
 
@@ -101,16 +98,23 @@ void fire_effect(bitmap_t *dst)
     /* Copy everything to the destination bitmap. */
     for(uint16_t y = 0; y < FIRE_HEIGHT - 1; y++) {
         for(uint16_t x = 0; x < FIRE_WIDTH; x++) {
-            uint16_t *fireptr = dst->buffer + dst->pitch * y + dst->bpp * x;
+            uint16_t *fireptr = (uint16_t *) (dst->buffer + dst->pitch * y + (dst->depth / 8) * x);
             *fireptr = g_palette[g_fire[y][x]];
         }
     }
 }
 
 
-void fire_putchar(char ascii, uint16_t x0, uint16_t y0, uint8_t color, char font[128][8])
+void fire_putchar(char ascii, int16_t x0, int16_t y0, char font[128][8])
 {
-    uint8_t *ptr = g_fire;
+
+    /* Basic clipping. */
+    if ((x0 < 0) || (y0 < 0) || (x0 > FIRE_WIDTH - 8 ) || (y0 > FIRE_HEIGHT - 8)) {
+        return;
+    }
+
+    uint8_t color = (rand() % 55) + 100;
+    uint8_t *ptr = g_fire[0];
     ptr += (FIRE_WIDTH * y0) + x0;
 
     for (uint8_t x = 0; x < 8; x++) {
@@ -123,5 +127,15 @@ void fire_putchar(char ascii, uint16_t x0, uint16_t y0, uint8_t color, char font
             }
         }
         ptr += FIRE_WIDTH - 8;
+    }
+}
+
+void fire_putstring(char ascii[], int16_t x0, int16_t y0, char font[128][8])
+{
+    for (uint8_t i = 0; i < strlen(ascii); i++) {
+        uint8_t amp =  abs(sin(0.035 * x0) * 10);
+
+        fire_putchar(ascii[i], x0, y0 + amp, font);
+        x0 += 7;
     }
 }
