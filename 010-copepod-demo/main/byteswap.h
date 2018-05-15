@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-#ifndef bswap_16
-#define bswap_16(x) ((((uint16_t) (x) << 8) & 0xff00) | (((uint16_t) (x) >> 8) & 0xff))
+#ifndef BSWAP_16
+#define BSWAP_16(x) ((((uint16_t) (x) << 8) & 0xff00) | (((uint16_t) (x) >> 8) & 0xff))
 #endif
 
-#ifndef bswap_32
-#define bswap_32(x) ((((uint32_t) (x) << 24) & 0xff000000) | \
+#ifndef BSWAP_32
+#define BSWAP_32(x) ((((uint32_t) (x) << 24) & 0xff000000) | \
                     (((uint32_t) (x) << 8) & 0xff0000) | \
                     (((uint32_t) (x) >> 8) & 0xff00) | \
                     (((uint32_t) (x) >> 24) & 0xff))
