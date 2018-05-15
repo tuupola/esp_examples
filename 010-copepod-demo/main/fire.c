@@ -50,7 +50,7 @@ POSSIBILITY OF SUCH DAMAGE.
 static uint16_t g_palette[256];
 static uint8_t g_fire[FIRE_HEIGHT][FIRE_WIDTH];
 
-void fire_init(void)
+void fire_init()
 {
     uint16_t color;
     hsl_t hsl;
@@ -71,18 +71,16 @@ void fire_init(void)
         g_palette[x] = BSWAP_16(color);
     }
 
-    /* Clear the fire. */
+    fire_clear();
+}
+
+void fire_clear()
+{
     memset(g_fire, 0x00, FIRE_HEIGHT * FIRE_WIDTH);
 }
 
-void fire_effect(bitmap_t *dst)
+void fire_effect(bitmap_t *dst, uint16_t multiplier, uint16_t divider)
 {
-    // /* Random bright line in the bottom. */
-    // for (uint16_t x = 0; x < FIRE_WIDTH; x++) {
-    //     uint8_t color = abs(32768 + rand());
-    //     g_fire[FIRE_HEIGHT - 1][x] = color;
-    // }
-
     /* The fire effect itself. */
     for(uint16_t y = 0; y < FIRE_HEIGHT - 1; y++) {
         for(uint16_t x = 0; x < FIRE_WIDTH; x++) {
@@ -91,7 +89,7 @@ void fire_effect(bitmap_t *dst)
                 + g_fire[(y + 1) % FIRE_HEIGHT][(x) % FIRE_WIDTH]
                 + g_fire[(y + 1) % FIRE_HEIGHT][(x + 1) % FIRE_WIDTH]
                 + g_fire[(y + 2) % FIRE_HEIGHT][(x) % FIRE_WIDTH])
-                * 30) / 130;
+                * multiplier) / divider;
         }
     }
 
@@ -101,6 +99,15 @@ void fire_effect(bitmap_t *dst)
             uint16_t *fireptr = (uint16_t *) (dst->buffer + dst->pitch * y + (dst->depth / 8) * x);
             *fireptr = g_palette[g_fire[y][x]];
         }
+    }
+}
+
+void fire_feed()
+{
+    /* Random bright line in the bottom. */
+    for (uint16_t x = 0; x < FIRE_WIDTH; x++) {
+        uint8_t color = abs(32768 + rand());
+        g_fire[FIRE_HEIGHT - 1][x] = color;
     }
 }
 

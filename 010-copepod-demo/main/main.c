@@ -45,6 +45,7 @@ static const char *TAG = "main";
 SemaphoreHandle_t g_mutex;
 float g_fps;
 float g_fps2;
+uint16_t g_demo = 0;
 
 #define FRAMEBUFFER_WIDTH   320
 #define FRAMEBUFFER_HEIGHT  240
@@ -92,11 +93,12 @@ void fps_task(void *params)
 /*
  * Animated fire effect. Adapted from http://lodev.org/cgtutor/fire.html.
  */
-void demo_task(void *params)
+void fire_task(void *params)
 {
     ESP_LOGI(TAG, "Heap before initialising fire: %d", esp_get_free_heap_size());
 
-    int16_t sx = 100;
+    int16_t sx = 100; /* Sine scroller x position. */
+
     bitmap_t bitmap = {
         .width = FIRE_WIDTH,
         .height = FIRE_HEIGHT,
@@ -109,17 +111,42 @@ void demo_task(void *params)
     ESP_LOGI(TAG, "Heap after fire init: %d", esp_get_free_heap_size());
 
     while (1) {
-        fire_putstring(" IS IT 90'S AGAIN?      HELLO M5STACK!      GREETZ LODE :D", sx, 30, font8x8_basic);
-        fire_effect(&bitmap);
 
-        sx = sx - 1;
-        if (sx < -440) {
-            sx = FIRE_WIDTH - 8;
+        /* Fine sire scroller. */
+        if (0 == g_demo % 3) {
+            fire_putstring(" IS IT 90'S AGAIN?      HELLO M5STACK!      GREETZ LODE :D", sx, FIRE_HEIGHT / 2, font8x8_basic);
+
+            sx = sx - 1;
+            if (sx < -440) {
+                sx = FIRE_WIDTH - 8;
+            }
+
+            fire_effect(&bitmap, 30, 130);
         }
 
-        //esp_task_wdt_reset();
+        /* Static M5Stack text. */
+        if (1 == g_demo % 3) {
+            fire_putchar('M', (FIRE_WIDTH / 2) - 28, (FIRE_HEIGHT / 2) - 2, font8x8_basic);
+            fire_putchar('5', (FIRE_WIDTH / 2) - 20, (FIRE_HEIGHT / 2), font8x8_basic);
+            fire_putchar('S', (FIRE_WIDTH / 2) - 12, (FIRE_HEIGHT / 2) + 2, font8x8_basic);
+            fire_putchar('T', (FIRE_WIDTH / 2) - 4, (FIRE_HEIGHT / 2) + 3, font8x8_basic);
+            fire_putchar('A', (FIRE_WIDTH / 2) + 4, (FIRE_HEIGHT / 2), font8x8_basic);
+            fire_putchar('C', (FIRE_WIDTH / 2) + 12, (FIRE_HEIGHT / 2) - 2, font8x8_basic);
+            fire_putchar('K', (FIRE_WIDTH / 2) + 20, (FIRE_HEIGHT / 2) - 1, font8x8_basic);
+            fire_effect(&bitmap, 30, 130);
+        }
+
+        /* Can't believe it is not fireplace! */
+        if (2 == g_demo % 3) {
+            fire_feed();
+            fire_effect(&bitmap, 32, 129);
+        }
+
         /* Blit the fire bitmap scaled up to framebuffer. */
         pod_scale_blit(0, 20, FRAMEBUFFER_WIDTH, FRAMEBUFFER_HEIGHT - 20, &bitmap);
+        //esp_task_wdt_reset();
+
+        /* Update the FX fps counter. */
         g_fps2 = fps2();
 
         //vTaskDelay(10 / portTICK_RATE_MS);
@@ -130,7 +157,16 @@ void demo_task(void *params)
     vTaskDelete(NULL);
 }
 
+void switch_task(void *params)
+{
+    while (1) {
+        g_demo = g_demo + 1;
+        fire_clear();
+        vTaskDelay(10000 / portTICK_RATE_MS);
+    }
 
+    vTaskDelete(NULL);
+}
 
 void app_main()
 {
@@ -146,7 +182,8 @@ void app_main()
     if (NULL != g_mutex) {
         xTaskCreatePinnedToCore(framebuffer_task, "Framebuffer", 8192, NULL, 1, NULL, 0);
         xTaskCreatePinnedToCore(fps_task, "FPS", 4096, NULL, 2, NULL, 1);
-        xTaskCreatePinnedToCore(demo_task, "Fire", 8192, NULL, 1, NULL, 1);
+        xTaskCreatePinnedToCore(fire_task, "Fire", 8192, NULL, 1, NULL, 1);
+        xTaskCreatePinnedToCore(switch_task, "switch", 2048, NULL, 1, NULL, 1);
     } else {
         ESP_LOGE(TAG, "No mutex?");
     }

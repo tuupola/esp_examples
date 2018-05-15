@@ -38,6 +38,8 @@ POSSIBILITY OF SUCH DAMAGE.
 #define FIRE_HEIGHT         80 /* 240 div 3 */
 
 void fire_init();
-void fire_effect(bitmap_t *dst);
+void fire_clear();
+void fire_feed();
+void fire_effect(bitmap_t *dst, uint16_t multiplier, uint16_t divider);
 void fire_putchar(char ascii, int16_t x0, int16_t y0, char font[128][8]);
 void fire_putstring(char ascii[], int16_t x0, int16_t y0, char font[128][8]);
