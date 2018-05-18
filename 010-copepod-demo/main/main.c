@@ -42,10 +42,10 @@ SOFTWARE.
 
 static const char *TAG = "main";
 
-SemaphoreHandle_t g_mutex;
-float g_fps;
-float g_fps2;
-uint16_t g_demo = 0;
+static SemaphoreHandle_t mutex;
+static float fb_fps;
+static float fx_fps;
+static uint16_t demo = 0;
 
 #define FRAMEBUFFER_WIDTH   320
 #define FRAMEBUFFER_HEIGHT  240
@@ -57,10 +57,10 @@ uint16_t g_demo = 0;
 void framebuffer_task(void *params)
 {
     while (1) {
-        xSemaphoreTake(g_mutex, portMAX_DELAY);
+        xSemaphoreTake(mutex, portMAX_DELAY);
         pod_flush();
-        xSemaphoreGive(g_mutex);
-        g_fps = fps();
+        xSemaphoreGive(mutex);
+        fb_fps = fps();
         //vTaskDelay(1 / portTICK_RATE_MS);
     }
 
@@ -79,10 +79,10 @@ void fps_task(void *params)
 
     while (1) {
         color = RGB565(0, 0, 255);
-        sprintf(message, " FX %.*f FPS                FB %.*f FPS", 1, g_fps2, 1, g_fps);
+        sprintf(message, " FX %.*f FPS                FB %.*f FPS", 1, fx_fps, 1, fb_fps);
         pod_puttext(message, 0, 4, color, font8x8_basic);
 
-        ESP_LOGI(TAG, "FX %.*f FPS / FB %.*f FPS", 1, g_fps2, 1, g_fps);
+        ESP_LOGI(TAG, "FX %.*f FPS / FB %.*f FPS", 1, fx_fps, 1, fb_fps);
 
         vTaskDelay(1000 / portTICK_RATE_MS);
     }
@@ -112,7 +112,7 @@ void fire_task(void *params)
     while (1) {
 
         /* Fine sire scroller. */
-        if (0 == g_demo % 3) {
+        if (0 == demo % 3) {
             fire_putstring(" IS IT 90'S AGAIN?      HELLO M5STACK!      THANKS LODE...", sx, FIRE_HEIGHT / 2, font8x8_basic);
 
             sx = sx - 1;
@@ -124,7 +124,7 @@ void fire_task(void *params)
         }
 
         /* Static M5Stack text. */
-        if (1 == g_demo % 3) {
+        if (1 == demo % 3) {
             fire_putchar('M', (FIRE_WIDTH / 2) - 28, (FIRE_HEIGHT / 2) - 2, font8x8_basic);
             fire_putchar('5', (FIRE_WIDTH / 2) - 20, (FIRE_HEIGHT / 2), font8x8_basic);
             fire_putchar('S', (FIRE_WIDTH / 2) - 12, (FIRE_HEIGHT / 2) + 2, font8x8_basic);
@@ -136,7 +136,7 @@ void fire_task(void *params)
         }
 
         /* Can't believe it is not fireplace! */
-        if (2 == g_demo % 3) {
+        if (2 == demo % 3) {
             fire_feed();
             fire_effect(&bitmap, 32, 129);
         }
@@ -146,7 +146,7 @@ void fire_task(void *params)
         //esp_task_wdt_reset();
 
         /* Update the FX fps counter. */
-        g_fps2 = fps2();
+        fx_fps = fps2();
 
         //vTaskDelay(10 / portTICK_RATE_MS);
     }
@@ -159,7 +159,7 @@ void fire_task(void *params)
 void switch_task(void *params)
 {
     while (1) {
-        g_demo = g_demo + 1;
+        demo = demo + 1;
         fire_clear();
         vTaskDelay(10000 / portTICK_RATE_MS);
     }
@@ -176,9 +176,9 @@ void app_main()
 
     ESP_LOGI(TAG, "Heap after pod init: %d", esp_get_free_heap_size());
 
-    g_mutex = xSemaphoreCreateMutex();
+    mutex = xSemaphoreCreateMutex();
 
-    if (NULL != g_mutex) {
+    if (NULL != mutex) {
         xTaskCreatePinnedToCore(framebuffer_task, "Framebuffer", 8192, NULL, 1, NULL, 0);
         xTaskCreatePinnedToCore(fps_task, "FPS", 4096, NULL, 2, NULL, 1);
         xTaskCreatePinnedToCore(fire_task, "Fire", 8192, NULL, 1, NULL, 1);
