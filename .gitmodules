@@ -16,3 +16,6 @@
 [submodule "010-copepod-demo/components/esp-ili9341"]
 	path = 010-copepod-demo/components/esp-ili9341
 	url = git@github.com:tuupola/esp-ili9341.git
+[submodule "010-copepod-demo/components/copepod-esp-ili9341"]
+	path = 010-copepod-demo/components/copepod-esp-ili9341
+	url = git@github.com:tuupola/copepod-esp-ili9341.git
