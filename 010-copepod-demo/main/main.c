@@ -183,7 +183,7 @@ void app_main()
         xTaskCreatePinnedToCore(framebuffer_task, "Framebuffer", 8192, NULL, 1, NULL, 0);
         xTaskCreatePinnedToCore(fps_task, "FPS", 4096, NULL, 2, NULL, 1);
         xTaskCreatePinnedToCore(fire_task, "Fire", 8192, NULL, 1, NULL, 1);
-        xTaskCreatePinnedToCore(switch_task, "switch", 2048, NULL, 1, NULL, 1);
+        xTaskCreatePinnedToCore(switch_task, "Switch", 2048, NULL, 1, NULL, 1);
     } else {
         ESP_LOGE(TAG, "No mutex?");
     }
