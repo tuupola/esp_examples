@@ -83,7 +83,6 @@ void fps_task(void *params)
         pod_puttext(message, 0, 4, color, font8x8_basic);
 
         ESP_LOGI(TAG, "FX %.*f FPS / FB %.*f FPS", 1, g_fps2, 1, g_fps);
-        //ESP_LOG_BUFFER_HEXDUMP(TAG, g_fb.buffer, 16 * 8, ESP_LOG_DEBUG);
 
         vTaskDelay(1000 / portTICK_RATE_MS);
     }
@@ -114,7 +113,7 @@ void fire_task(void *params)
 
         /* Fine sire scroller. */
         if (0 == g_demo % 3) {
-            fire_putstring(" IS IT 90'S AGAIN?      HELLO M5STACK!      GREETZ LODE :D", sx, FIRE_HEIGHT / 2, font8x8_basic);
+            fire_putstring(" IS IT 90'S AGAIN?      HELLO M5STACK!      THANKS LODE...", sx, FIRE_HEIGHT / 2, font8x8_basic);
 
             sx = sx - 1;
             if (sx < -440) {
