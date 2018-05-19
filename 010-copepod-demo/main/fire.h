@@ -34,8 +34,8 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <stdint.h>
 #include <bitmap.h>
 
-#define FIRE_WIDTH          106 /* 320 div 3 */
-#define FIRE_HEIGHT         80 /* 240 div 3 */
+#define FIRE_WIDTH      110
+#define FIRE_HEIGHT     80
 
 void fire_init();
 void fire_clear();
