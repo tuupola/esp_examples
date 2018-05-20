@@ -13,3 +13,12 @@
 [submodule "010-copepod-demo/components/copepod-esp-ili9341"]
 	path = 010-m5stack-fire/components/copepod-esp-ili9341
 	url = git@github.com:tuupola/copepod-esp-ili9341.git
+[submodule "009-m5stack-gfx/components/copepod-esp-ili9341"]
+	path = 009-m5stack-gfx/components/copepod-esp-ili9341
+	url = git@github.com:tuupola/copepod-esp-ili9341.git
+[submodule "009-m5stack-gfx/components/esp-ili9341"]
+	path = 009-m5stack-gfx/components/esp-ili9341
+	url = git@github.com:tuupola/esp-ili9341.git
+[submodule "009-m5stack-gfx/components/copepod"]
+	path = 009-m5stack-gfx/components/copepod
+	url = git@github.com:tuupola/copepod.git
