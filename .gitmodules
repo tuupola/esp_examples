@@ -4,12 +4,6 @@
 [submodule "008-i2c-sw-master/components/esp32-software-i2c"]
 	path = 008-i2c-sw-master/components/esp32-software-i2c
 	url = git@github.com:tuupola/esp32-software-i2c.git
-[submodule "009-m5stack-lcd/components/esp-ili9341"]
-	path = 009-m5stack-lcd/components/esp-ili9341
-	url = git@github.com:tuupola/esp-ili9341.git
-[submodule "009-m5stack-lcd/components/copepod"]
-	path = 009-m5stack-lcd/components/copepod
-	url = git@github.com:tuupola/copepod.git
 [submodule "010-copepod-demo/components/copepod"]
 	path = 010-m5stack-fire/components/copepod
 	url = git@github.com:tuupola/copepod.git
