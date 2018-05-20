@@ -38,6 +38,7 @@ SOFTWARE.
 #include "font8x8.h"
 #include "fps.h"
 #include "fps2.h"
+#include "sdkconfig.h"
 
 static const char *TAG = "main";
 
@@ -73,18 +74,28 @@ void framebuffer_task(void *params)
  */
 void fps_task(void *params)
 {
-    uint16_t color;
+    uint16_t color = RGB565(0, 0, 255);
     char message[42];
 
+#ifdef CONFIG_POD_HAL_USE_FRAMEBUFFER
     while (1) {
-        color = RGB565(0, 0, 255);
         sprintf(message, " FX %.*f FPS              FB %.*f FPS", 1, fx_fps, 1, fb_fps);
         pod_puttext(message, 0, 4, color, font8x8_basic);
-
         ESP_LOGI(TAG, "FX %.*f FPS / FB %.*f FPS", 1, fx_fps, 1, fb_fps);
 
         vTaskDelay(1000 / portTICK_RATE_MS);
     }
+#else
+    while (1) {
+        sprintf(message, " FX %.*f FPS", 1, fx_fps);
+        xSemaphoreTake(mutex, portMAX_DELAY);
+        //pod_puttext(message, 0, 4, color, font8x8_basic);
+        xSemaphoreGive(mutex);
+        ESP_LOGI(TAG, "FX %.*f FPS", 1, fx_fps);
+
+        vTaskDelay(1000 / portTICK_RATE_MS);
+    }
+#endif
     vTaskDelete(NULL);
 }
 
@@ -92,8 +103,8 @@ void switch_task(void *params)
 {
     while (1) {
         demo = demo + 1;
-        vTaskDelay(10000 / portTICK_RATE_MS);
         fx_fps = fps2(true);
+        vTaskDelay(10000 / portTICK_RATE_MS);
     }
 
     vTaskDelete(NULL);
@@ -103,8 +114,7 @@ void demo_task(void *params)
 {
     while (1) {
         if (0 == demo % 6) {
-
-            /* Random pixels, 148000 per second- */
+            /* Random pixels, 148000 per second. */
             uint16_t x0 = (rand() % 320);
             uint16_t y0 = (rand() % 220) + 20;
             uint16_t colour = rand() % 0xffff;
@@ -124,7 +134,7 @@ void demo_task(void *params)
 
         } else if (0 == demo % 4) {
 
-            /* Random rectangles, 4285 per second. */
+            /* Random rectangles, 21370 per second. */
             uint16_t x0 = (rand() % 320);
             uint16_t y0 = (rand() % 220) + 20;
             uint16_t x1 = (rand() % 320);
@@ -135,7 +145,7 @@ void demo_task(void *params)
 
         } else if (0 == demo % 3) {
 
-            /* Random filled rectangles, 202 per second. */
+            /* Random filled rectangles, 2090 per second. */
             uint16_t x0 = (rand() % 320);
             uint16_t y0 = (rand() % 220) + 20;
             uint16_t x1 = (rand() % 320);
@@ -165,7 +175,7 @@ void demo_task(void *params)
         /* Update the FX fps counter. */
         fx_fps = fps2(false);
 
-        //vTaskDelay(1 / portTICK_RATE_MS);
+        //vTaskDelay(2000 / portTICK_RATE_MS);
     }
 
 
@@ -184,8 +194,10 @@ void app_main()
     mutex = xSemaphoreCreateMutex();
 
     if (NULL != mutex) {
+#ifdef CONFIG_POD_HAL_USE_FRAMEBUFFER
         xTaskCreatePinnedToCore(framebuffer_task, "Framebuffer", 8192, NULL, 1, NULL, 0);
-        xTaskCreatePinnedToCore(fps_task, "FPS", 4096, NULL, 2, NULL, 1);
+#endif
+        xTaskCreatePinnedToCore(fps_task, "FPS", 8092, NULL, 2, NULL, 1);
         xTaskCreatePinnedToCore(demo_task, "Demo", 4096, NULL, 1, NULL, 1);
         xTaskCreatePinnedToCore(switch_task, "Switch", 2048, NULL, 2, NULL, 0);
     } else {
