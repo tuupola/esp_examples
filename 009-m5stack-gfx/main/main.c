@@ -37,6 +37,7 @@ SOFTWARE.
 #include "copepod.h"
 #include "font8x8.h"
 #include "fps.h"
+#include "fps2.h"
 
 static const char *TAG = "main";
 
@@ -77,7 +78,7 @@ void fps_task(void *params)
 
     while (1) {
         color = RGB565(0, 0, 255);
-        sprintf(message, " FX %.*f FPS                FB %.*f FPS", 1, fx_fps, 1, fb_fps);
+        sprintf(message, " FX %.*f FPS              FB %.*f FPS", 1, fx_fps, 1, fb_fps);
         pod_puttext(message, 0, 4, color, font8x8_basic);
 
         ESP_LOGI(TAG, "FX %.*f FPS / FB %.*f FPS", 1, fx_fps, 1, fb_fps);
@@ -92,7 +93,81 @@ void switch_task(void *params)
     while (1) {
         demo = demo + 1;
         vTaskDelay(10000 / portTICK_RATE_MS);
+        fx_fps = fps2(true);
     }
+
+    vTaskDelete(NULL);
+}
+
+void demo_task(void *params)
+{
+    while (1) {
+        if (0 == demo % 6) {
+
+            /* Random pixels, 148000 per second- */
+            uint16_t x0 = (rand() % 320);
+            uint16_t y0 = (rand() % 220) + 20;
+            uint16_t colour = rand() % 0xffff;
+
+            pod_putpixel(x0, y0, colour);
+
+        } else if (0 == demo % 5) {
+
+            /* Random lines, 10950 per second. */
+            uint16_t x0 = (rand() % 320);
+            uint16_t y0 = (rand() % 220) + 20;
+            uint16_t x1 = (rand() % 320);
+            uint16_t y1 = (rand() % 220) + 20;
+            uint16_t colour = rand() % 0xffff;
+
+            pod_line(x0, y0, x1, y1, colour);
+
+        } else if (0 == demo % 4) {
+
+            /* Random rectangles, 4285 per second. */
+            uint16_t x0 = (rand() % 320);
+            uint16_t y0 = (rand() % 220) + 20;
+            uint16_t x1 = (rand() % 320);
+            uint16_t y1 = (rand() % 220) + 20;
+            uint16_t colour = rand() % 0xffff;
+
+            pod_rectangle(x0, y0, x1, y1, colour);
+
+        } else if (0 == demo % 3) {
+
+            /* Random filled rectangles, 202 per second. */
+            uint16_t x0 = (rand() % 320);
+            uint16_t y0 = (rand() % 220) + 20;
+            uint16_t x1 = (rand() % 320);
+            uint16_t y1 = (rand() % 220) + 20;
+            uint16_t colour = rand() % 0xffff;
+
+            pod_fillrectangle(x0, y0, x1, y1, colour);
+
+        } else if (0 == demo % 2) {
+
+            /* Random ascii characters, 24940 per second. */
+            uint16_t x0 = (rand() % 320);
+            uint16_t y0 = (rand() % 220) + 20;
+            uint16_t colour = rand() % 0xffff;
+            char ascii = rand() % 127;
+            pod_putchar(ascii, x0, y0, colour, font8x8_basic);
+
+        } else if (0 == demo % 1) {
+
+            /* String in random positions, 2580 strings per second. */
+            uint16_t x0 = (rand() % 320);
+            uint16_t y0 = (rand() % 220) + 20;
+            uint16_t colour = rand() % 0xffff;
+            pod_puttext("YO! MTV Raps", x0, y0, colour, font8x8_basic);
+        }
+
+        /* Update the FX fps counter. */
+        fx_fps = fps2(false);
+
+        //vTaskDelay(1 / portTICK_RATE_MS);
+    }
+
 
     vTaskDelete(NULL);
 }
@@ -111,7 +186,8 @@ void app_main()
     if (NULL != mutex) {
         xTaskCreatePinnedToCore(framebuffer_task, "Framebuffer", 8192, NULL, 1, NULL, 0);
         xTaskCreatePinnedToCore(fps_task, "FPS", 4096, NULL, 2, NULL, 1);
-        xTaskCreatePinnedToCore(switch_task, "Switch", 2048, NULL, 1, NULL, 1);
+        xTaskCreatePinnedToCore(demo_task, "Demo", 4096, NULL, 1, NULL, 1);
+        xTaskCreatePinnedToCore(switch_task, "Switch", 2048, NULL, 2, NULL, 0);
     } else {
         ESP_LOGE(TAG, "No mutex?");
     }
