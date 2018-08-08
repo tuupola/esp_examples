@@ -10,7 +10,7 @@ static const char* TAG = "hello_world";
 void hello_world_task(void *pvParameters)
 {
     while(1) {
-        ESP_LOGD(TAG, "Hello world!");
+        ESP_LOGI(TAG, "Hello world!");
         vTaskDelay(250 / portTICK_RATE_MS);
     }
 
@@ -20,7 +20,7 @@ void hello_world_task(void *pvParameters)
 void hello_moon_task(void *pvParameters)
 {
     while(1) {
-        ESP_LOGD(TAG, "Hello moon!");
+        ESP_LOGI(TAG, "Hello moon!");
         vTaskDelay(250 / portTICK_RATE_MS);
     }
 
