@@ -124,10 +124,10 @@ void demo_task(void *params)
         } else if (0 == demo % 5) {
 
             /* Random lines, 10950 per second. */
-            uint16_t x0 = (rand() % 320);
+            uint16_t x0 = (rand() % 370) - 50;
             uint16_t y0 = (rand() % 220) + 20;
-            uint16_t x1 = (rand() % 320);
-            uint16_t y1 = (rand() % 220) + 20;
+            uint16_t x1 = (rand() % 320) + 50;
+            uint16_t y1 = (rand() % 240) + 20;
             uint16_t colour = rand() % 0xffff;
 
             pod_line(x0, y0, x1, y1, colour);
@@ -135,9 +135,9 @@ void demo_task(void *params)
         } else if (0 == demo % 4) {
 
             /* Random rectangles, 21370 per second. */
-            uint16_t x0 = (rand() % 320);
+            uint16_t x0 = (rand() % 370) - 50;
             uint16_t y0 = (rand() % 220) + 20;
-            uint16_t x1 = (rand() % 320);
+            uint16_t x1 = (rand() % 320) + 50;
             uint16_t y1 = (rand() % 220) + 20;
             uint16_t colour = rand() % 0xffff;
 
@@ -146,9 +146,9 @@ void demo_task(void *params)
         } else if (0 == demo % 3) {
 
             /* Random filled rectangles, 2090 per second. */
-            uint16_t x0 = (rand() % 320);
+            uint16_t x0 = (rand() % 370) - 50;
             uint16_t y0 = (rand() % 220) + 20;
-            uint16_t x1 = (rand() % 320);
+            uint16_t x1 = (rand() % 320) + 50;
             uint16_t y1 = (rand() % 220) + 20;
             uint16_t colour = rand() % 0xffff;
 
@@ -166,7 +166,7 @@ void demo_task(void *params)
         } else if (0 == demo % 1) {
 
             /* String in random positions, 2580 strings per second. */
-            uint16_t x0 = (rand() % 320);
+            uint16_t x0 = (rand() % 370) - 50 ;
             uint16_t y0 = (rand() % 220) + 20;
             uint16_t colour = rand() % 0xffff;
             pod_puttext("YO! MTV Raps", x0, y0, colour, font8x8_basic);
@@ -175,7 +175,7 @@ void demo_task(void *params)
         /* Update the FX fps counter. */
         fx_fps = fps2(false);
 
-        //vTaskDelay(2000 / portTICK_RATE_MS);
+        //vTaskDelay(100 / portTICK_RATE_MS);
     }
 
 
