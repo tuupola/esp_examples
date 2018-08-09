@@ -77,8 +77,8 @@ void uart_init()
     ESP_ERROR_CHECK(
         uart_set_pin(
             UART_NUM_2,
-            GPIO_NUM_16,
-            GPIO_NUM_17,
+            GPIO_NUM_17, // M5Stack GPS module pins
+            GPIO_NUM_16, // M5Stack GPS module pins
             UART_PIN_NO_CHANGE,
             UART_PIN_NO_CHANGE
         )
