@@ -73,10 +73,6 @@ void uart_init()
             UART_INTR_FLAGS
         )
     );
-    /*
-    // Set UART pins(TX: IO16 (UART2 default), RX: IO17 (UART2 default), RTS: IO18, CTS: IO19)
-ESP_ERROR_CHECK(uart_set_pin(UART_NUM_2, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE, 18, 19));
-    */
 
     ESP_ERROR_CHECK(
         uart_set_pin(
@@ -89,15 +85,36 @@ ESP_ERROR_CHECK(uart_set_pin(UART_NUM_2, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE,
     );
 }
 
+char *uart_read_line(uart_port_t uart_port) {
+    static char line[255];
+    char *ptr = line;
+
+    while (true) {
+
+        int16_t bytes_read = uart_read_bytes(
+            uart_port,
+            (unsigned char *)ptr,
+            1,
+            portMAX_DELAY
+        );
+
+        if (1 == bytes_read) {
+            if('\n' == *ptr) {
+                ptr++;
+                *ptr = '\0';
+                return line;
+            }
+            ptr++;
+        }
+    }
+}
+
 void uart_read_task(void *params)
 {
-    char data[1];
-    char *ptr = data;
-
     ESP_LOGI(TAG, "Reading uart...");
     while(1) {
-        int8_t size = uart_read_bytes(UART_NUM_2, (unsigned char *)ptr, 1, 500 / portTICK_RATE_MS);
-        ESP_LOGI(TAG, "%s, %d", data, size);
+        char *line = uart_read_line(UART_NUM_2);
+        ESP_LOGI(TAG, "%s", line);
         //vTaskDelay(1000 / portTICK_RATE_MS);
     }
 
