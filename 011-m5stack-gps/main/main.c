@@ -43,6 +43,14 @@ SOFTWARE.
 
 static const char* TAG = "main";
 
+typedef struct {
+    float latitude;
+    float longitude;
+    float speed;
+} gnss_status_t;
+
+static gnss_status_t gnss_status;
+
 void uart_init()
 {
     uart_config_t uart_config = {
@@ -110,8 +118,8 @@ void uart_read_task(void *params)
     ESP_LOGI(TAG, "Reading uart...");
     while(1) {
         char *line = uart_read_line(UART_NUM_2);
-        ESP_LOGI(TAG, "%s", line);
-        //vTaskDelay(1000 / portTICK_RATE_MS);
+        ESP_LOGV(TAG, "%s", line);
+        vTaskDelay(1000 / portTICK_RATE_MS);
     }
 
     vTaskDelete(NULL);
@@ -126,27 +134,61 @@ void uart_read_and_parse_task(void *params)
         ESP_LOGD(TAG, "%s", line);
 
         switch (minmea_sentence_id(line, false)) {
+
+            /* Only RMC and GLL are used for updating internal status. */
+
             /* RMC (Recommended Minimum: position, velocity, time) */
             case MINMEA_SENTENCE_RMC: {
                 struct minmea_sentence_rmc frame;
                 if (minmea_parse_rmc(&frame, line)) {
-                    ESP_LOGI(
+                    ESP_LOGV(
                         TAG,
                         "$xxRMC: coordinates and speed: (%f,%f) %f",
                         minmea_tocoord(&frame.latitude),
                         minmea_tocoord(&frame.longitude),
                         minmea_tofloat(&frame.speed)
                     );
+
+                    /* Update internal status. */
+                    gnss_status.latitude = minmea_tocoord(&frame.latitude);
+                    gnss_status.longitude = minmea_tocoord(&frame.longitude);
+                    gnss_status.speed = minmea_tofloat(&frame.speed);
+
                 } else {
-                    ESP_LOGI(TAG, "$xxRMC sentence was not parsed");
+                    ESP_LOGV(TAG, "$xxRMC sentence was not parsed");
                 }
             } break;
+
+            /* GLL (Geographic Position: Latitude/Longitude) */
+            case MINMEA_SENTENCE_GLL: {
+                struct minmea_sentence_gll frame;
+                if (minmea_parse_gll(&frame, line)) {
+                    ESP_LOGV(
+                        TAG,
+                        "$xxGLL: coordinates, status and mode: (%f,%f), %d, %d",
+                        minmea_tocoord(&frame.latitude),
+                        minmea_tocoord(&frame.longitude),
+                        frame.status,
+                        frame.mode
+                    );
+
+                    /* Update internal status. */
+                    gnss_status.latitude = minmea_tocoord(&frame.latitude);
+                    gnss_status.longitude = minmea_tocoord(&frame.longitude);
+
+                } else {
+                    ESP_LOGV(TAG, "$xxGLL sentence is not parsed");
+                }
+            } break;
+
+            /* Rest of the sentences are just for demo. Enable verbose */
+            /* logging to see the output.
 
             /* ZDA (Time & Date - UTC, day, month, year and local time zone) */
             case MINMEA_SENTENCE_ZDA: {
                 struct minmea_sentence_zda frame;
                 if (minmea_parse_zda(&frame, line)) {
-                    ESP_LOGI(
+                    ESP_LOGV(
                         TAG,
                         "$xxZDA: %d:%d:%d %02d.%02d.%d UTC%+03d:%02d",
                         frame.time.hours,
@@ -159,7 +201,7 @@ void uart_read_and_parse_task(void *params)
                         frame.minute_offset
                     );
                 } else {
-                    ESP_LOGI(TAG, "$xxZDA sentence was not parsed");
+                    ESP_LOGV(TAG, "$xxZDA sentence was not parsed");
                 }
             } break;
 
@@ -167,9 +209,9 @@ void uart_read_and_parse_task(void *params)
             case MINMEA_SENTENCE_GGA: {
                 struct minmea_sentence_gga frame;
                 if (minmea_parse_gga(&frame, line)) {
-                    ESP_LOGI(TAG, "$xxGGA: fix quality: %d", frame.fix_quality);
+                    ESP_LOGV(TAG, "$xxGGA: fix quality: %d", frame.fix_quality);
                 } else {
-                    ESP_LOGI(TAG, "$xxGGA sentence is not parsed");
+                    ESP_LOGV(TAG, "$xxGGA sentence is not parsed");
                 }
             } break;
 
@@ -177,7 +219,7 @@ void uart_read_and_parse_task(void *params)
             case MINMEA_SENTENCE_VTG: {
                 struct minmea_sentence_vtg frame;
                 if (minmea_parse_vtg(&frame, line)) {
-                        ESP_LOGI(
+                        ESP_LOGV(
                         TAG,
                         "$xxVTG: degrees and speed: %f true, %f mag, %f knots, %f kph",
                         minmea_tofloat(&frame.true_track_degrees),
@@ -186,7 +228,7 @@ void uart_read_and_parse_task(void *params)
                         minmea_tofloat(&frame.speed_kph)
                     );
                 } else {
-                    ESP_LOGI(TAG, "$xxVTG sentence is not parsed");
+                    ESP_LOGV(TAG, "$xxVTG sentence is not parsed");
                 }
             } break;
 
@@ -194,15 +236,15 @@ void uart_read_and_parse_task(void *params)
             case MINMEA_SENTENCE_GSV: {
                 struct minmea_sentence_gsv frame;
                 if (minmea_parse_gsv(&frame, line)) {
-                    ESP_LOGI(
+                    ESP_LOGV(
                         TAG,
                         "$xxGSV: message %d of %d",
                         frame.msg_nr,
                         frame.total_msgs
                     );
-                    ESP_LOGI(TAG, "$xxGSV: satellites in view: %d", frame.total_sats);
+                    ESP_LOGV(TAG, "$xxGSV: satellites in view: %d", frame.total_sats);
                     for (int i = 0; i < 4; i++)
-                        ESP_LOGI(
+                        ESP_LOGV(
                             TAG,
                             "$xxGSV: #%d, elevation: %d, azimuth: %d, snr: %d dbm",
                             frame.sats[i].nr,
@@ -211,7 +253,7 @@ void uart_read_and_parse_task(void *params)
                             frame.sats[i].snr
                         );
                 } else {
-                    ESP_LOGI(TAG, "$xxGSV sentence is not parsed");
+                    ESP_LOGV(TAG, "$xxGSV sentence is not parsed");
                 }
             } break;
 
@@ -219,30 +261,13 @@ void uart_read_and_parse_task(void *params)
             case MINMEA_SENTENCE_GST: {
                 struct minmea_sentence_gst frame;
                 if (minmea_parse_gst(&frame, line)) {
-                    ESP_LOGI(TAG,
+                    ESP_LOGV(TAG,
                     "$xxGST floating point degree latitude, longitude and altitude error deviation: (%f,%f,%f)",
                     minmea_tofloat(&frame.latitude_error_deviation),
                     minmea_tofloat(&frame.longitude_error_deviation),
                     minmea_tofloat(&frame.altitude_error_deviation));
                 } else {
-                    ESP_LOGI(TAG, "$xxGST sentence is not parsed");
-                }
-            } break;
-
-            /* GLL (Geographic Position: Latitude/Longitude) */
-            case MINMEA_SENTENCE_GLL: {
-                struct minmea_sentence_gll frame;
-                if (minmea_parse_gll(&frame, line)) {
-                    ESP_LOGI(
-                        TAG,
-                        "$xxGLL: coordinates, status and mode: (%f,%f), %d, %d",
-                        minmea_tocoord(&frame.latitude),
-                        minmea_tocoord(&frame.longitude),
-                        frame.status,
-                        frame.mode
-                    );
-                } else {
-                    ESP_LOGI(TAG, "$xxGLL sentence is not parsed");
+                    ESP_LOGV(TAG, "$xxGST sentence is not parsed");
                 }
             } break;
 
@@ -250,7 +275,7 @@ void uart_read_and_parse_task(void *params)
             case MINMEA_SENTENCE_GSA: {
                 struct minmea_sentence_gsa frame;
                 if (minmea_parse_gsa(&frame, line)) {
-                    ESP_LOGI(
+                    ESP_LOGV(
                         TAG,
                         "$xxGSA: mode, fix type (PDOP, HDOP, VDOP):  %d, %d (%f, %f %f)",
                         frame.mode,
@@ -260,19 +285,38 @@ void uart_read_and_parse_task(void *params)
                         minmea_tofloat(&frame.vdop)
                     );
                 } else {
-                    ESP_LOGI(TAG, "$xxGSA sentence is not parsed");
+                    ESP_LOGV(TAG, "$xxGSA sentence is not parsed");
                 }
             } break;
 
             case MINMEA_UNKNOWN: {
-                ESP_LOGI(TAG, "$xxxxx sentence is not valid");
+                ESP_LOGE(TAG, "$xxxxx sentence is not valid");
             } break;
 
             case MINMEA_INVALID: {
-                ESP_LOGI(TAG, "$xxxxx sentence is not valid");
+                ESP_LOGE(TAG, "$xxxxx sentence is not valid");
             } break;
         }
+        vTaskDelay(1000 / portTICK_RATE_MS);
     }
+    vTaskDelete(NULL);
+}
+
+
+void display_gnss_status_task(void *params)
+{
+    ESP_LOGI(TAG, "Displaying GNSS status...");
+    while(1) {
+        ESP_LOGI(
+            TAG,
+            "GNSS: Coordinates (%f, %f), speed %f knots",
+            gnss_status.latitude,
+            gnss_status.longitude,
+            gnss_status.speed
+        );
+        vTaskDelay(1000 / portTICK_RATE_MS);
+    }
+
     vTaskDelete(NULL);
 }
 
@@ -280,5 +324,7 @@ void app_main()
 {
     uart_init();
     //xTaskCreatePinnedToCore(uart_read_task, "UART read and parse", 2048, NULL, 1, NULL, 1);
-    xTaskCreatePinnedToCore(uart_read_and_parse_task, "UART read and parse", 2048, NULL, 1, NULL, 1);
+    xTaskCreatePinnedToCore(uart_read_and_parse_task, "UART read and parse", 2048, NULL, 10, NULL, 1);
+    xTaskCreatePinnedToCore(display_gnss_status_task, "Display GNSS status", 2048, NULL, 5, NULL, 1);
+
 }
