@@ -231,7 +231,19 @@ void uart_read_and_parse_task(void *params)
 
             /* GLL (Geographic Position: Latitude/Longitude) */
             case MINMEA_SENTENCE_GLL: {
-                ESP_LOGI(TAG, "$xxGLL");
+                struct minmea_sentence_gll frame;
+                if (minmea_parse_gll(&frame, line)) {
+                    ESP_LOGI(
+                        TAG,
+                        "$xxGLL: coordinates, status and mode: (%f,%f), %d, %d",
+                        minmea_tocoord(&frame.latitude),
+                        minmea_tocoord(&frame.longitude),
+                        frame.status,
+                        frame.mode
+                    );
+                } else {
+                    ESP_LOGI(TAG, "$xxGLL sentence is not parsed");
+                }
             } break;
 
             /* GSA (DOP and active satellites) */
