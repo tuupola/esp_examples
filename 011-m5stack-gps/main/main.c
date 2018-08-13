@@ -123,6 +123,8 @@ void uart_read_and_parse_task(void *params)
     while(1) {
         char *line = uart_read_line(UART_NUM_2);
 
+        ESP_LOGD(TAG, "%s", line);
+
         switch (minmea_sentence_id(line, false)) {
             /* RMC (Recommended Minimum: position, velocity, time) */
             case MINMEA_SENTENCE_RMC: {
@@ -136,13 +138,29 @@ void uart_read_and_parse_task(void *params)
                         minmea_tofloat(&frame.speed)
                     );
                 } else {
-                    ESP_LOGI(TAG, "$xxRMC sentence is not parsed");
+                    ESP_LOGI(TAG, "$xxRMC sentence was not parsed");
                 }
             } break;
 
             /* ZDA (Time & Date - UTC, day, month, year and local time zone) */
             case MINMEA_SENTENCE_ZDA: {
-                ESP_LOGI(TAG, "$xxZDA");
+                struct minmea_sentence_zda frame;
+                if (minmea_parse_zda(&frame, line)) {
+                    ESP_LOGI(
+                        TAG,
+                        "$xxZDA: %d:%d:%d %02d.%02d.%d UTC%+03d:%02d",
+                        frame.time.hours,
+                        frame.time.minutes,
+                        frame.time.seconds,
+                        frame.date.day,
+                        frame.date.month,
+                        frame.date.year,
+                        frame.hour_offset,
+                        frame.minute_offset
+                    );
+                } else {
+                    ESP_LOGI(TAG, "$xxZDA sentence was not parsed");
+                }
             } break;
 
             /* GGA (Fix Data) */
@@ -176,11 +194,11 @@ void uart_read_and_parse_task(void *params)
             } break;
 
             case MINMEA_UNKNOWN: {
-                ESP_LOGI(TAG, "$xxxxx sentence is not valid\n");
+                ESP_LOGI(TAG, "$xxxxx sentence is not valid");
             } break;
 
             case MINMEA_INVALID: {
-                ESP_LOGI(TAG, "$xxxxx sentence is not valid\n");
+                ESP_LOGI(TAG, "$xxxxx sentence is not valid");
             } break;
         }
     }
@@ -190,5 +208,6 @@ void uart_read_and_parse_task(void *params)
 void app_main()
 {
     uart_init();
+    //xTaskCreatePinnedToCore(uart_read_task, "UART read and parse", 2048, NULL, 1, NULL, 1);
     xTaskCreatePinnedToCore(uart_read_and_parse_task, "UART read and parse", 2048, NULL, 1, NULL, 1);
 }
