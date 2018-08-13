@@ -168,15 +168,26 @@ void uart_read_and_parse_task(void *params)
                 struct minmea_sentence_gga frame;
                 if (minmea_parse_gga(&frame, line)) {
                     ESP_LOGI(TAG, "$xxGGA: fix quality: %d", frame.fix_quality);
-                }
-                else {
+                } else {
                     ESP_LOGI(TAG, "$xxGGA sentence is not parsed");
                 }
             } break;
 
             /* VTG (Track made good and Ground speed) */
             case MINMEA_SENTENCE_VTG: {
-                ESP_LOGI(TAG, "$xxVTG");
+                struct minmea_sentence_vtg frame;
+                if (minmea_parse_vtg(&frame, line)) {
+                        ESP_LOGI(
+                        TAG,
+                        "$xxVTG: degrees and speed: %f true, %f mag, %f knots, %f kph",
+                        minmea_tofloat(&frame.true_track_degrees),
+                        minmea_tofloat(&frame.magnetic_track_degrees),
+                        minmea_tofloat(&frame.speed_knots),
+                        minmea_tofloat(&frame.speed_kph)
+                    );
+                } else {
+                    ESP_LOGI(TAG, "$xxVTG sentence is not parsed");
+                }
             } break;
 
             /* GSV (Satellites in view) */
