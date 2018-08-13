@@ -165,7 +165,13 @@ void uart_read_and_parse_task(void *params)
 
             /* GGA (Fix Data) */
             case MINMEA_SENTENCE_GGA: {
-                ESP_LOGI(TAG, "$xxCGA");
+                struct minmea_sentence_gga frame;
+                if (minmea_parse_gga(&frame, line)) {
+                    ESP_LOGI(TAG, "$xxGGA: fix quality: %d", frame.fix_quality);
+                }
+                else {
+                    ESP_LOGI(TAG, "$xxGGA sentence is not parsed");
+                }
             } break;
 
             /* VTG (Track made good and Ground speed) */
