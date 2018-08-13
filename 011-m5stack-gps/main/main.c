@@ -248,7 +248,20 @@ void uart_read_and_parse_task(void *params)
 
             /* GSA (DOP and active satellites) */
             case MINMEA_SENTENCE_GSA: {
-                ESP_LOGI(TAG, "$xxGSA");
+                struct minmea_sentence_gsa frame;
+                if (minmea_parse_gsa(&frame, line)) {
+                    ESP_LOGI(
+                        TAG,
+                        "$xxGSA: mode, fix type (PDOP, HDOP, VDOP):  %d, %d (%f, %f %f)",
+                        frame.mode,
+                        frame.fix_type,
+                        minmea_tofloat(&frame.pdop),
+                        minmea_tofloat(&frame.hdop),
+                        minmea_tofloat(&frame.vdop)
+                    );
+                } else {
+                    ESP_LOGI(TAG, "$xxGSA sentence is not parsed");
+                }
             } break;
 
             case MINMEA_UNKNOWN: {
