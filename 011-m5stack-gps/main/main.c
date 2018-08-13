@@ -192,7 +192,27 @@ void uart_read_and_parse_task(void *params)
 
             /* GSV (Satellites in view) */
             case MINMEA_SENTENCE_GSV: {
-                ESP_LOGI(TAG, "$xxGSV");
+                struct minmea_sentence_gsv frame;
+                if (minmea_parse_gsv(&frame, line)) {
+                    ESP_LOGI(
+                        TAG,
+                        "$xxGSV: message %d of %d",
+                        frame.msg_nr,
+                        frame.total_msgs
+                    );
+                    ESP_LOGI(TAG, "$xxGSV: satellites in view: %d", frame.total_sats);
+                    for (int i = 0; i < 4; i++)
+                        ESP_LOGI(
+                            TAG,
+                            "$xxGSV: #%d, elevation: %d, azimuth: %d, snr: %d dbm",
+                            frame.sats[i].nr,
+                            frame.sats[i].elevation,
+                            frame.sats[i].azimuth,
+                            frame.sats[i].snr
+                        );
+                } else {
+                    ESP_LOGI(TAG, "$xxGSV sentence is not parsed");
+                }
             } break;
 
             /* GST (Pseudorange Noise Statistics) */
