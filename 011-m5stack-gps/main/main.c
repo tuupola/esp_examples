@@ -217,7 +217,16 @@ void uart_read_and_parse_task(void *params)
 
             /* GST (Pseudorange Noise Statistics) */
             case MINMEA_SENTENCE_GST: {
-                ESP_LOGI(TAG, "$xxGST");
+                struct minmea_sentence_gst frame;
+                if (minmea_parse_gst(&frame, line)) {
+                    ESP_LOGI(TAG,
+                    "$xxGST floating point degree latitude, longitude and altitude error deviation: (%f,%f,%f)",
+                    minmea_tofloat(&frame.latitude_error_deviation),
+                    minmea_tofloat(&frame.longitude_error_deviation),
+                    minmea_tofloat(&frame.altitude_error_deviation));
+                } else {
+                    ESP_LOGI(TAG, "$xxGST sentence is not parsed");
+                }
             } break;
 
             /* GLL (Geographic Position: Latitude/Longitude) */
