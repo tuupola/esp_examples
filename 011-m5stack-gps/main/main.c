@@ -29,9 +29,13 @@ SOFTWARE.
 
 */
 
-#include <esp_log.h>
 #include <driver/uart.h>
+#include <esp_log.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
 
+#include "copepod.h"
+#include "font8x8.h"
 #include "minmea.h"
 #include "sdkconfig.h"
 
@@ -50,6 +54,7 @@ typedef struct {
 } gnss_status_t;
 
 static gnss_status_t gnss_status;
+static SemaphoreHandle_t mutex;
 
 void uart_init()
 {
@@ -182,7 +187,7 @@ void uart_read_and_parse_task(void *params)
             } break;
 
             /* Rest of the sentences are just for demo. Enable verbose */
-            /* logging to see the output.
+            /* logging to see the output. */
 
             /* ZDA (Time & Date - UTC, day, month, year and local time zone) */
             case MINMEA_SENTENCE_ZDA: {
@@ -305,7 +310,12 @@ void uart_read_and_parse_task(void *params)
 
 void display_gnss_status_task(void *params)
 {
+
+    uint16_t color = RGB565(0, 0, 255);
+    char message[64];
+
     ESP_LOGI(TAG, "Displaying GNSS status...");
+
     while(1) {
         ESP_LOGI(
             TAG,
@@ -314,7 +324,35 @@ void display_gnss_status_task(void *params)
             gnss_status.longitude,
             gnss_status.speed
         );
+
+        sprintf(
+            message, "  Lat: %f",
+            gnss_status.latitude
+        );
+        pod_puttext(message, 95, 100, color, font8x8_basic);
+        sprintf(
+            message, "  Lon: %f",
+            gnss_status.longitude
+        );
+        pod_puttext(message, 95, 109, color, font8x8_basic);
+        sprintf(
+            message, "Knots: %f",
+            gnss_status.speed
+        );
+        pod_puttext(message, 95, 118, color, font8x8_basic);
+
         vTaskDelay(1000 / portTICK_RATE_MS);
+    }
+
+    vTaskDelete(NULL);
+}
+
+void framebuffer_task(void *params)
+{
+    while (1) {
+        xSemaphoreTake(mutex, portMAX_DELAY);
+        pod_flush();
+        xSemaphoreGive(mutex);
     }
 
     vTaskDelete(NULL);
@@ -322,8 +360,17 @@ void display_gnss_status_task(void *params)
 
 void app_main()
 {
+    ESP_LOGI(TAG, "SDK version: %s", esp_get_idf_version());
+    ESP_LOGI(TAG, "Heap when starting: %d", esp_get_free_heap_size());
+
     uart_init();
-    //xTaskCreatePinnedToCore(uart_read_task, "UART read and parse", 2048, NULL, 1, NULL, 1);
+    pod_init();
+
+    ESP_LOGI(TAG, "Heap after init: %d", esp_get_free_heap_size());
+
+    mutex = xSemaphoreCreateMutex();
+
+    xTaskCreatePinnedToCore(framebuffer_task, "Framebuffer", 8192, NULL, 1, NULL, 0);
     xTaskCreatePinnedToCore(uart_read_and_parse_task, "UART read and parse", 2048, NULL, 10, NULL, 1);
     xTaskCreatePinnedToCore(display_gnss_status_task, "Display GNSS status", 2048, NULL, 5, NULL, 1);
 

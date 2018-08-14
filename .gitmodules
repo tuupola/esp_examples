@@ -25,3 +25,15 @@
 [submodule "011-m5stack-gps/components/minmea/minmea"]
 	path = 011-m5stack-gps/components/minmea/minmea
 	url = git@github.com:kosma/minmea.git
+[submodule "011-m5stack-gps/components/copepod"]
+	path = 011-m5stack-gps/components/copepod
+	url = git@github.com:tuupola/copepod.git
+[submodule "011-m5stack-gps/components/esp-ili9341"]
+	path = 011-m5stack-gps/components/esp-ili9341
+	url = git@github.com:tuupola/esp-ili9341.git
+[submodule "011-m5stack-gps/components/copepod-esp-ili9341"]
+	path = 011-m5stack-gps/components/copepod-esp-ili9341
+	url = git@github.com:tuupola/copepod-esp-ili9341.git
+[submodule "011-m5stack-gps/components/font8x8/font8x8"]
+	path = 011-m5stack-gps/components/font8x8/font8x8
+	url = git@github.com:dhepper/font8x8.git
