@@ -336,10 +336,12 @@ void display_gnss_status_task(void *params)
         );
         pod_puttext(message, 95, 109, color, font8x8_basic);
         sprintf(
-            message, "Knots: %f",
-            gnss_status.speed
+            message, "Speed: %.2f km/h",
+            gnss_status.speed * 1.852
         );
         pod_puttext(message, 95, 118, color, font8x8_basic);
+
+
 
         vTaskDelay(1000 / portTICK_RATE_MS);
     }
