@@ -37,3 +37,6 @@
 [submodule "011-m5stack-gps/components/font8x8/font8x8"]
 	path = 011-m5stack-gps/components/font8x8/font8x8
 	url = git@github.com:dhepper/font8x8.git
+[submodule "012-mqtt-wifi/components/espmqtt"]
+	path = 012-mqtt-wifi/components/espmqtt
+	url = https://github.com/tuanpmt/espmqtt.git

@@ -1,0 +1,15 @@
+menu "MQTT Wifi Example"
+
+config WIFI_SSID
+    string "Wifi SSID"
+    default ""
+    help
+        SSID (network name) to connect to.
+
+config WIFI_PASSWORD
+    string "Wifi Password"
+    default "mypassword"
+    help
+        WiFi password
+
+endmenu
