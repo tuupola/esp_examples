@@ -1,8 +1,10 @@
 /*
 
-Adapted from Espressif example:
+Adapted from Espressif examples:
 https://github.com/espressif/esp-idf/blob/master/examples/wifi/simple_wifi/
+https://github.com/espressif/esp-mqtt/tree/master/examples/mqtt_tcp
 
+Copyright (c) 2016 Tuan PM
 Copyright (c) 2018 Mika Tuupola
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -33,15 +35,23 @@ SOFTWARE.
 #include <freertos/event_groups.h>
 #include <nvs_flash.h>
 
+#include "mqtt_client.h"
 #include "sdkconfig.h"
 
-#define WIFI_SSID           CONFIG_WIFI_SSID
-#define WIFI_PASS           CONFIG_WIFI_PASSWORD
-#define WIFI_CONNECTED_BIT  BIT0
+#define WIFI_SSID               CONFIG_WIFI_SSID
+#define WIFI_PASSWORD           CONFIG_WIFI_PASSWORD
+#define WIFI_CONNECTED_BIT      BIT0
+
+#define MQTT_USERNAME           CONFIG_MQTT_USERNAME
+#define MQTT_PASSWORD           CONFIG_MQTT_PASSWORD
+#define MQTT_CONNECTED_BIT      BIT1
+#define MQTT_SUBSCRIBED_BIT     BIT2
 
 /* FreeRTOS event group to signal when we are connected. */
 static EventGroupHandle_t wifi_event_group;
+static EventGroupHandle_t mqtt_event_group;
 static const char* TAG = "main";
+static esp_mqtt_client_handle_t mqtt_client;
 
 static esp_err_t wifi_event_handler(void *ctx, system_event_t *event)
 {
@@ -84,7 +94,7 @@ static void wifi_init()
     wifi_config_t wifi_config = {
         .sta = {
             .ssid = WIFI_SSID,
-            .password = WIFI_PASS
+            .password = WIFI_PASSWORD
         },
     };
 
@@ -98,14 +108,94 @@ static void wifi_init()
     xEventGroupWaitBits(wifi_event_group, WIFI_CONNECTED_BIT, false, true, portMAX_DELAY);
 }
 
+static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
+{
+    int16_t msg_id;
+
+    switch (event->event_id) {
+        case MQTT_EVENT_CONNECTED:
+            ESP_LOGI(TAG, "MQTT_EVENT_CONNECTED");
+            xEventGroupSetBits(mqtt_event_group, MQTT_CONNECTED_BIT);
+
+            msg_id = esp_mqtt_client_subscribe(mqtt_client, "v1/devices/me/telemetry", 1);
+            ESP_LOGI(TAG, "sent telemetry subscribe msg_id=%d", msg_id);
+
+            break;
+        case MQTT_EVENT_DISCONNECTED:
+            ESP_LOGI(TAG, "MQTT_EVENT_DISCONNECTED");
+            xEventGroupClearBits(mqtt_event_group, MQTT_CONNECTED_BIT);
+            xEventGroupClearBits(mqtt_event_group, MQTT_SUBSCRIBED_BIT);
+            break;
+
+        case MQTT_EVENT_SUBSCRIBED:
+            ESP_LOGI(TAG, "MQTT_EVENT_SUBSCRIBED, msg_id=%d", event->msg_id);
+            xEventGroupSetBits(mqtt_event_group, MQTT_SUBSCRIBED_BIT);
+            break;
+        case MQTT_EVENT_UNSUBSCRIBED:
+            ESP_LOGI(TAG, "MQTT_EVENT_UNSUBSCRIBED, msg_id=%d", event->msg_id);
+            xEventGroupClearBits(mqtt_event_group, MQTT_SUBSCRIBED_BIT);
+            break;
+        case MQTT_EVENT_PUBLISHED:
+            ESP_LOGI(TAG, "MQTT_EVENT_PUBLISHED, msg_id=%d", event->msg_id);
+            break;
+        case MQTT_EVENT_DATA:
+            ESP_LOGI(TAG, "MQTT_EVENT_DATA");
+            printf("TOPIC=%.*s\r\n", event->topic_len, event->topic);
+            printf("DATA=%.*s\r\n", event->data_len, event->data);
+            break;
+        case MQTT_EVENT_ERROR:
+            ESP_LOGI(TAG, "MQTT_EVENT_ERROR");
+            break;
+    }
+    return ESP_OK;
+}
+
+static void mqtt_init(void)
+{
+    mqtt_event_group = xEventGroupCreate();
+
+    const esp_mqtt_client_config_t mqtt_config = {
+        .uri = "mqtt://demo.thingsboard.io",
+        .event_handle = mqtt_event_handler,
+        .username = MQTT_USERNAME,
+        .password = MQTT_PASSWORD
+    };
+
+    mqtt_client = esp_mqtt_client_init(&mqtt_config);
+    esp_mqtt_client_start(mqtt_client);
+}
+
+void mqtt_task(void *params)
+{
+    ESP_LOGI(TAG, "Starting MQTT task.");
+    int16_t msg_id;
+
+    while(1) {
+        xEventGroupWaitBits(mqtt_event_group, MQTT_SUBSCRIBED_BIT, false, true, portMAX_DELAY);
+
+        msg_id = esp_mqtt_client_publish(
+            mqtt_client,
+            "v1/devices/me/telemetry",
+            "{\"temperature\":21, \"humidity\":55.0, \"active\": false}",
+            0, 0, 0
+        );
+        ESP_LOGI(TAG, "sent publish, msg_id=%d", msg_id);
+        vTaskDelay(3000 / portTICK_RATE_MS);
+    }
+
+    vTaskDelete(NULL);
+}
+
+
 void app_main()
 {
     ESP_LOGI(TAG, "SDK version: %s", esp_get_idf_version());
     ESP_LOGI(TAG, "Heap at start: %d", esp_get_free_heap_size());
 
     wifi_init();
+    mqtt_init();
 
     ESP_LOGI(TAG, "Heap after init: %d", esp_get_free_heap_size());
 
-    //xTaskCreatePinnedToCore(uart_read_and_parse_task, "UART read and parse", 2048, NULL, 10, NULL, 1);
+    xTaskCreatePinnedToCore(mqtt_task, "MQTT", 2048, NULL, 10, NULL, 1);
 }
