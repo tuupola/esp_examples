@@ -8,8 +8,21 @@ config WIFI_SSID
 
 config WIFI_PASSWORD
     string "Wifi Password"
-    default "mypassword"
+    default ""
     help
         WiFi password
+
+config MQTT_USERNAME
+    string "MQTT username"
+    default ""
+    help
+        This can also sometimes be the access key.
+
+config MQTT_PASSWORD
+    string "MQTT Password"
+    default ""
+    help
+        MQTT password.
+
 
 endmenu
