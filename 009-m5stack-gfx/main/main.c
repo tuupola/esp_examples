@@ -102,6 +102,7 @@ void fps_task(void *params)
 void switch_task(void *params)
 {
     while (1) {
+        pod_cls();
         demo = demo + 1;
         fx_fps = fps2(true);
         vTaskDelay(10000 / portTICK_RATE_MS);
@@ -113,7 +114,27 @@ void switch_task(void *params)
 void demo_task(void *params)
 {
     while (1) {
-        if (0 == demo % 6) {
+        if (0 == demo % 8) {
+        //if (true) {
+            /* Random filled circles, 120 per second. */
+            uint16_t x0 = (rand() % 320);
+            uint16_t y0 = (rand() % 220) + 20;
+            uint16_t r = (rand() % 100);
+            uint16_t colour = rand() % 0xffff;
+
+            pod_fillcircle(x0, y0, r, colour);
+        } else if (0 == demo % 7) {
+
+            /* Random circles, 3300 per second. */
+            uint16_t x0 = (rand() % 320);
+            uint16_t y0 = (rand() % 220) + 20;
+            uint16_t r = (rand() % 100);
+            uint16_t colour = rand() % 0xffff;
+
+            pod_circle(x0, y0, r, colour);
+
+        } else if (0 == demo % 6) {
+
             /* Random pixels, 148000 per second. */
             uint16_t x0 = (rand() % 320);
             uint16_t y0 = (rand() % 220) + 20;
@@ -156,7 +177,7 @@ void demo_task(void *params)
 
         } else if (0 == demo % 2) {
 
-            /* Random ascii characters, 24940 per second. */
+            /* Random ascii characters, 35400 per second. */
             uint16_t x0 = (rand() % 320);
             uint16_t y0 = (rand() % 220) + 20;
             uint16_t colour = rand() % 0xffff;
@@ -165,7 +186,7 @@ void demo_task(void *params)
 
         } else if (0 == demo % 1) {
 
-            /* String in random positions, 2580 strings per second. */
+            /* String in random positions, 4300 strings per second. */
             uint16_t x0 = (rand() % 370) - 50 ;
             uint16_t y0 = (rand() % 220) + 20;
             uint16_t colour = rand() % 0xffff;

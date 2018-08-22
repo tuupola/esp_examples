@@ -40,3 +40,6 @@
 [submodule "012-mqtt-wifi/components/espmqtt"]
 	path = 012-mqtt-wifi/components/espmqtt
 	url = https://github.com/tuanpmt/espmqtt.git
+[submodule "012-mqtt-wifi/components/esp-mqtt"]
+	path = 012-mqtt-wifi/components/esp-mqtt
+	url = git@github.com:espressif/esp-mqtt.git
