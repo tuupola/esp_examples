@@ -35,7 +35,9 @@ SOFTWARE.
 #include <freertos/event_groups.h>
 #include <nvs_flash.h>
 
-#include "mqtt_client.h"
+#include <mqtt_client.h>
+#include <mjson.h>
+
 #include "sdkconfig.h"
 
 #define WIFI_SSID               CONFIG_WIFI_SSID
@@ -117,7 +119,7 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
             ESP_LOGI(TAG, "MQTT_EVENT_CONNECTED");
             xEventGroupSetBits(mqtt_event_group, MQTT_CONNECTED_BIT);
 
-            msg_id = esp_mqtt_client_subscribe(mqtt_client, "v1/devices/me/telemetry", 1);
+            msg_id = esp_mqtt_client_subscribe(mqtt_client, "/test/telemetry", 1);
             ESP_LOGI(TAG, "sent telemetry subscribe msg_id=%d", msg_id);
 
             break;
@@ -155,10 +157,11 @@ static void mqtt_init(void)
     mqtt_event_group = xEventGroupCreate();
 
     const esp_mqtt_client_config_t mqtt_config = {
-        .uri = "mqtt://demo.thingsboard.io",
+        //.uri = "mqtt://demo.thingsboard.io",
+        // .username = MQTT_USERNAME,
+        // .password = MQTT_PASSWORD
+        .uri = "mqtt://iot.eclipse.org",
         .event_handle = mqtt_event_handler,
-        .username = MQTT_USERNAME,
-        .password = MQTT_PASSWORD
     };
 
     mqtt_client = esp_mqtt_client_init(&mqtt_config);
@@ -168,16 +171,26 @@ static void mqtt_init(void)
 void mqtt_task(void *params)
 {
     ESP_LOGI(TAG, "Starting MQTT task.");
+    uint8_t length;
     int16_t msg_id;
+    char buffer[255];
+
+    struct mjson_out json = MJSON_OUT_FIXED_BUF(buffer, sizeof(buffer));
+    length = mjson_printf(
+                &json, "{%Q:%d, %Q:%f, %Q:%B}",
+                "temperature", 21,
+                "humidity", 55.0,
+                "active", false
+            );
+    ESP_LOGI(TAG, "%.*s", length, buffer);
 
     while(1) {
         xEventGroupWaitBits(mqtt_event_group, MQTT_SUBSCRIBED_BIT, false, true, portMAX_DELAY);
 
         msg_id = esp_mqtt_client_publish(
             mqtt_client,
-            "v1/devices/me/telemetry",
-            "{\"temperature\":21, \"humidity\":55.0, \"active\": false}",
-            0, 0, 0
+            "/test/telemetry",
+            buffer, length, 0, 0
         );
         ESP_LOGI(TAG, "sent publish, msg_id=%d", msg_id);
         vTaskDelay(3000 / portTICK_RATE_MS);

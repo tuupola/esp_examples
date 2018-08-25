@@ -43,3 +43,6 @@
 [submodule "012-mqtt-wifi/components/esp-mqtt"]
 	path = 012-mqtt-wifi/components/esp-mqtt
 	url = git@github.com:espressif/esp-mqtt.git
+[submodule "012-mqtt-wifi/components/mjson/mjson"]
+	path = 012-mqtt-wifi/components/mjson/mjson
+	url = git@github.com:cpq/mjson.git
