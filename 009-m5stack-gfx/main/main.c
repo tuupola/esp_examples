@@ -114,14 +114,26 @@ void switch_task(void *params)
 void demo_task(void *params)
 {
     while (1) {
-        if (0 == demo % 8) {
+        if (0 == demo % 9) {
         //if (true) {
-            /* Random filled circles, 120 per second. */
-            uint16_t x0 = (rand() % 320);
-            uint16_t y0 = (rand() % 220) + 20;
-            uint16_t r = (rand() % 100);
+            /* Random four sided polygons, 2550 per second. */
+            int16_t x0 = (rand() % 320);
+            int16_t y0 = (rand() % 220) + 20;
+            int16_t x1 = (rand() % 320);
+            int16_t y1 = (rand() % 220) + 20;
+            int16_t x2 = (rand() % 320);
+            int16_t y2 = (rand() % 220) + 20;
+            int16_t x3 = (rand() % 320);
+            int16_t y3 = (rand() % 220) + 20;
+            int16_t vertices[8] = {x0, y0, x1, y1, x2, y2, x3, y3};
             uint16_t colour = rand() % 0xffff;
-
+            pod_polygon(4, vertices, colour);
+        } else if (0 == demo % 8) {
+            /* Random filled circles, 8100 per second. */
+            uint16_t x0 = (rand() % 320);
+            uint16_t y0 = (rand() % 220) + 60;
+            uint16_t r = (rand() % 40);
+            uint16_t colour = rand() % 0xffff;
             pod_fillcircle(x0, y0, r, colour);
         } else if (0 == demo % 7) {
 
