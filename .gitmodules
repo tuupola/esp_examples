@@ -46,3 +46,12 @@
 [submodule "012-mqtt-wifi/components/mjson/mjson"]
 	path = 012-mqtt-wifi/components/mjson/mjson
 	url = git@github.com:cpq/mjson.git
+[submodule "014-mandelbrot/components/copepod"]
+	path = 014-mandelbrot/components/copepod
+	url = git@github.com:tuupola/copepod.git
+[submodule "014-mandelbrot/components/copepod-esp-ili9341"]
+	path = 014-mandelbrot/components/copepod-esp-ili9341
+	url = git@github.com:tuupola/copepod-esp-ili9341.git
+[submodule "014-mandelbrot/components/esp-ili9341"]
+	path = 014-mandelbrot/components/esp-ili9341
+	url = git@github.com:tuupola/esp-ili9341.git
