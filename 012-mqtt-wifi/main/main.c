@@ -179,7 +179,7 @@ void mqtt_task(void *params)
     length = mjson_printf(
                 &json, "{%Q:%d, %Q:%f, %Q:%B}",
                 "temperature", 21,
-                "humidity", 55.0,
+                "humidity", 55.2,
                 "active", false
             );
     ESP_LOGI(TAG, "%.*s", length, buffer);
