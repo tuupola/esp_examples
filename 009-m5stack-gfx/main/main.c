@@ -25,6 +25,7 @@ SOFTWARE.
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
@@ -88,9 +89,9 @@ void fps_task(void *params)
 #else
     while (1) {
         sprintf(message, " FX %.*f FPS", 1, fx_fps);
-        xSemaphoreTake(mutex, portMAX_DELAY);
-        //pod_puttext(message, 0, 4, color, font8x8_basic);
-        xSemaphoreGive(mutex);
+        //xSemaphoreTake(mutex, portMAX_DELAY);
+        pod_puttext(message, 0, 4, color, font8x8_basic);
+        //xSemaphoreGive(mutex);
         ESP_LOGI(TAG, "FX %.*f FPS", 1, fx_fps);
 
         vTaskDelay(1000 / portTICK_RATE_MS);
@@ -102,10 +103,11 @@ void fps_task(void *params)
 void switch_task(void *params)
 {
     while (1) {
-        pod_cls();
+        //pod_cls();
         demo = demo + 1;
         fx_fps = fps2(true);
-        vTaskDelay(10000 / portTICK_RATE_MS);
+        //vTaskDelay(10000 / portTICK_RATE_MS);
+        vTaskDelay(3000 / portTICK_RATE_MS);
     }
 
     vTaskDelete(NULL);
@@ -114,20 +116,42 @@ void switch_task(void *params)
 void demo_task(void *params)
 {
     while (1) {
-        if (0 == demo % 9) {
+        //xSemaphoreTake(mutex, portMAX_DELAY);
+
+        if (0 == demo % 10) {
         //if (true) {
-            /* Random four sided polygons, 2550 per second. */
-            int16_t x0 = (rand() % 320);
-            int16_t y0 = (rand() % 220) + 20;
-            int16_t x1 = (rand() % 320);
-            int16_t y1 = (rand() % 220) + 20;
-            int16_t x2 = (rand() % 320);
-            int16_t y2 = (rand() % 220) + 20;
-            int16_t x3 = (rand() % 320);
-            int16_t y3 = (rand() % 220) + 20;
-            int16_t vertices[8] = {x0, y0, x1, y1, x2, y2, x3, y3};
+            /* Random five sided filled polygons, 540 per second. */
+            int16_t x0 = (rand() % 360) - 20; /* -20 ... 360 */
+            int16_t y0 = (rand() % 240) + 20; /*  20 ... 260 */
+            int16_t x1 = (rand() % 360) - 20; /* -20 ... 360 */
+            int16_t y1 = (rand() % 240) + 20; /*  20 ... 260 */
+            int16_t x2 = (rand() % 360) - 20; /* -20 ... 360 */
+            int16_t y2 = (rand() % 240) + 20; /*  20 ... 260 */
+            int16_t x3 = (rand() % 360) - 20; /* -20 ... 360 */
+            int16_t y3 = (rand() % 240) + 20; /*  20 ... 260 */
+            int16_t x4 = (rand() % 360) - 20; /* -20 ... 360 */
+            int16_t y4 = (rand() % 240) + 20; /*  20 ... 260 */
+
+            int16_t vertices[10] = {x0, y0, x1, y1, x2, y2, x3, y3, x4, y4};
             uint16_t colour = rand() % 0xffff;
-            pod_polygon(4, vertices, colour);
+            pod_fillpolygon(5, vertices, colour);
+        } else if (0 == demo % 9) {
+        //if (true) {
+            /* Random five sided polygons, 1900 per second. */
+            int16_t x0 = (rand() % 360) - 20; /* -20 ... 360 */
+            int16_t y0 = (rand() % 240) + 20; /*  20 ... 260 */
+            int16_t x1 = (rand() % 360) - 20; /* -20 ... 360 */
+            int16_t y1 = (rand() % 240) + 20; /*  20 ... 260 */
+            int16_t x2 = (rand() % 360) - 20; /* -20 ... 360 */
+            int16_t y2 = (rand() % 240) + 20; /*  20 ... 260 */
+            int16_t x3 = (rand() % 360) - 20; /* -20 ... 360 */
+            int16_t y3 = (rand() % 240) + 20; /*  20 ... 260 */
+            int16_t x4 = (rand() % 360) - 20; /* -20 ... 360 */
+            int16_t y4 = (rand() % 240) + 20; /*  20 ... 260 */
+
+            int16_t vertices[10] = {x0, y0, x1, y1, x2, y2, x3, y3, x4, y4};
+            uint16_t colour = rand() % 0xffff;
+            pod_polygon(5, vertices, colour);
         } else if (0 == demo % 8) {
             /* Random filled circles, 8100 per second. */
             uint16_t x0 = (rand() % 320);
@@ -153,14 +177,15 @@ void demo_task(void *params)
             uint16_t colour = rand() % 0xffff;
 
             pod_putpixel(x0, y0, colour);
+            //vTaskDelay(100 / portTICK_RATE_MS);
 
         } else if (0 == demo % 5) {
 
             /* Random lines, 10950 per second. */
-            uint16_t x0 = (rand() % 370) - 50;
-            uint16_t y0 = (rand() % 220) + 20;
-            uint16_t x1 = (rand() % 320) + 50;
-            uint16_t y1 = (rand() % 240) + 20;
+            int16_t x0 = (rand() % 360) - 20; /* -20 ... 360 */
+            int16_t y0 = (rand() % 240) + 20; /*  20 ... 260 */
+            int16_t x1 = (rand() % 360) - 20; /* -20 ... 360 */
+            int16_t y1 = (rand() % 240) + 20; /*  20 ... 260 */
             uint16_t colour = rand() % 0xffff;
 
             pod_line(x0, y0, x1, y1, colour);
@@ -168,10 +193,10 @@ void demo_task(void *params)
         } else if (0 == demo % 4) {
 
             /* Random rectangles, 21370 per second. */
-            uint16_t x0 = (rand() % 370) - 50;
-            uint16_t y0 = (rand() % 220) + 20;
-            uint16_t x1 = (rand() % 320) + 50;
-            uint16_t y1 = (rand() % 220) + 20;
+            int16_t x0 = (rand() % 360) - 20; /* -20 ... 360 */
+            int16_t y0 = (rand() % 240) + 20; /*  20 ... 260 */
+            int16_t x1 = (rand() % 360) - 20; /* -20 ... 360 */
+            int16_t y1 = (rand() % 240) + 20; /*  20 ... 260 */
             uint16_t colour = rand() % 0xffff;
 
             pod_rectangle(x0, y0, x1, y1, colour);
@@ -179,10 +204,10 @@ void demo_task(void *params)
         } else if (0 == demo % 3) {
 
             /* Random filled rectangles, 2090 per second. */
-            uint16_t x0 = (rand() % 370) - 50;
-            uint16_t y0 = (rand() % 220) + 20;
-            uint16_t x1 = (rand() % 320) + 50;
-            uint16_t y1 = (rand() % 220) + 20;
+            int16_t x0 = (rand() % 360) - 20; /* -20 ... 360 */
+            int16_t y0 = (rand() % 240) + 20; /*  20 ... 260 */
+            int16_t x1 = (rand() % 360) - 20; /* -20 ... 360 */
+            int16_t y1 = (rand() % 240) + 20; /*  20 ... 260 */
             uint16_t colour = rand() % 0xffff;
 
             pod_fillrectangle(x0, y0, x1, y1, colour);
@@ -204,6 +229,7 @@ void demo_task(void *params)
             uint16_t colour = rand() % 0xffff;
             pod_puttext("YO! MTV Raps", x0, y0, colour, font8x8_basic);
         }
+        //xSemaphoreGive(mutex);
 
         /* Update the FX fps counter. */
         fx_fps = fps2(false);
