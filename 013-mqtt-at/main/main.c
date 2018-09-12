@@ -30,25 +30,22 @@ SOFTWARE.
 */
 
 #include <string.h>
-//#include <driver/uart.h>
-// #include <esp_log.h>
-// #include <freertos/FreeRTOS.h>
-// #include <freertos/task.h>
 
-// #include "copepod.h"
-// #include "font8x8.h"
-// #include "minmea.h"
+#include <mqtt_client.h>
+//#include <./components/esp-mqtt/lib/include/mqtt_msg.h>
+#include "mqtt_msg.h"
+
 #include "uart.h"
 #include "hex.h"
 #include "sdkconfig.h"
 
 static const char* TAG = "main";
 
-char* MQTT_CONNECT = "101800044d51545404020078000c45535033325f3466394433431a";
-//static char* MQTT_SUBSCRIBE = "821427ea000f2f746573742f74656c656d65747279011a";
-char* MQTT_PUBLISH = "3044000f2f746573742f74656c656d657472797b2274656d7065726174757265223a32312c202268756d6964697479223a35352e322c2022616374697665223a66616c73657d1a";
-
+/*
+char* MQTT_CONNECT = "101800044d51545404020078000c45535033325f346639443343";
+char* MQTT_PUBLISH = "3044000f2f746573742f74656c656d657472797b2274656d7065726174757265223a32312c202268756d6964697479223a35352e322c2022616374697665223a66616c73657d";
 char mqtt[255];
+*/
 
 void app_main()
 {
@@ -66,64 +63,87 @@ void app_main()
     /* Check if module is connected. */
     uart_write_bytes(UART_NUM_2, "AT\n", strlen("AT\n"));
     vTaskDelay(1000 / portTICK_RATE_MS);
-    //ESP_LOGD(TAG, "%s", uart_read_line(UART_NUM_2));
 
     uart_write_bytes(UART_NUM_2, "ATI\n", strlen("ATI\n"));
     vTaskDelay(1000 / portTICK_RATE_MS);
-    //ESP_LOGD(TAG, "%s", uart_read_line(UART_NUM_2));
 
     uart_write_bytes(UART_NUM_2, "ATI+CMEE=2\n", strlen("ATI+CMEE=2\n"));
     vTaskDelay(1000 / portTICK_RATE_MS);
-    //ESP_LOGD(TAG, "%s", uart_read_line(UART_NUM_2));
 
     /* Set phone functionatiity. 1 = full, 0 = minumum, 4 = disable rf */
     uart_write_bytes(UART_NUM_2, "AT+CFUN=1\n", strlen("AT+CFUN=1\n"));
     vTaskDelay(1000 / portTICK_RATE_MS);
-    //ESP_LOGD(TAG, "%s", uart_read_line(UART_NUM_2));
 
     /* Make sure SIM does not expect PIN. Should reply +CPIN:READY. */
     uart_write_bytes(UART_NUM_2, "AT+CPIN?\n", strlen("AT+CPIN?\n"));
     vTaskDelay(1000 / portTICK_RATE_MS);
-    //ESP_LOGD(TAG, "%s", uart_read_line(UART_NUM_2));
 
     /* Signal quality report. */
     uart_write_bytes(UART_NUM_2, "AT+CSQ\n", strlen("AT+CSQ\n"));
     vTaskDelay(1000 / portTICK_RATE_MS);
-    //ESP_LOGD(TAG, "%s", uart_read_line(UART_NUM_2));
 
     /* Start task and set APN, username and password. */
     uart_write_bytes(UART_NUM_2, "AT+CSTT=\"internet\",\"\",\"\"\n", strlen("AT+CSTT=\"internet\",\"\",\"\"\n"));
     vTaskDelay(1000 / portTICK_RATE_MS);
-    //ESP_LOGD(TAG, "%s", uart_read_line(UART_NUM_2));
 
     /* Bring up wireless connection with GPRS or CSD. */
     uart_write_bytes(UART_NUM_2, "AT+CIICR\n", strlen("AT+CIICR\n"));
     vTaskDelay(1000 / portTICK_RATE_MS);
-    //ESP_LOGD(TAG, "%s", uart_read_line(UART_NUM_2));
 
     /* Get local ip address. */
     uart_write_bytes(UART_NUM_2, "AT+CIFSR\n", strlen("AT+CIFSR\n"));
     vTaskDelay(1000 / portTICK_RATE_MS);
-    //ESP_LOGD(TAG, "%s", uart_read_line(UART_NUM_2));
+
+    uart_write_bytes(UART_NUM_2, "AT+CIPMUX=0\n", strlen("AT+CIPMUX=0\n"));
+    vTaskDelay(3000 / portTICK_RATE_MS);
 
     uart_write_bytes(UART_NUM_2, "AT+CIPSTART=\"TCP\",\"test.mosquitto.org\",\"1883\"\n", strlen("AT+CIPSTART=\"TCP\",\"test.mosquitto.org\",\"1883\"\n"));
+    vTaskDelay(5000 / portTICK_RATE_MS);
+
+    const char *ctrl_z = "\x1A";
+    mqtt_message_t *message;
+
+    mqtt_connection_t connection;
+    connection.buffer_length = MQTT_BUFFER_SIZE_BYTE;
+    connection.buffer = (uint8_t *)malloc(MQTT_BUFFER_SIZE_BYTE);
+
+    mqtt_connect_info_t info;
+    //info.client_id = platform_create_id_string();
+    info.username = NULL;
+    info.client_id = "ESP32_4f9D3C";
+    info.clean_session = false;
+    // info.keepalive = 60;
+    message = mqtt_msg_connect(&connection, &info);
+
+    uart_write_bytes(UART_NUM_2, "AT+CIPSEND\n", strlen("AT+CIPSEND\n"));
+    vTaskDelay(1000 / portTICK_RATE_MS);
+    ESP_LOGI(TAG, "Message length: %d", message->length);
+    ESP_LOG_BUFFER_HEXDUMP(TAG, message->data, message->length, ESP_LOG_INFO);
+    uart_write_bytes(UART_NUM_2, (const char *)message->data, message->length);
+    ESP_LOGI(TAG, "CTRL-Z");
+    ESP_LOG_BUFFER_HEXDUMP(TAG, ctrl_z, 1, ESP_LOG_INFO);
+    uart_write_bytes(UART_NUM_2, ctrl_z, 1);
+    vTaskDelay(10000 / portTICK_RATE_MS);
+
+    /* Connect again. */
+    uart_write_bytes(UART_NUM_2, "AT+CIPSTART=\"TCP\",\"test.mosquitto.org\",\"1883\"\n", strlen("AT+CIPSTART=\"TCP\",\"test.mosquitto.org\",\"1883\"\n"));
     vTaskDelay(3000 / portTICK_RATE_MS);
-    //ESP_LOGD(TAG, "%s", uart_read_line(UART_NUM_2));
+
+    const char *topic = "/test/telemetry";
+    const char *data = "Hello world!";
+    uint16_t message_id;
+
+    message = mqtt_msg_publish(&connection, topic,data, 12, 0, 0, &message_id);
 
     uart_write_bytes(UART_NUM_2, "AT+CIPSEND\n", strlen("AT+CIPSEND\n"));
     vTaskDelay(1000 / portTICK_RATE_MS);
-    hex2string(MQTT_CONNECT, mqtt);
-    fwrite(mqtt, 1, 27, stdout);
-    uart_write_bytes(UART_NUM_2, mqtt, 27);
-    vTaskDelay(1000 / portTICK_RATE_MS);
-
-
-    uart_write_bytes(UART_NUM_2, "AT+CIPSEND\n", strlen("AT+CIPSEND\n"));
-    vTaskDelay(1000 / portTICK_RATE_MS);
-    hex2string(MQTT_PUBLISH, mqtt);
-    fwrite(mqtt, 1, 71, stdout);
-    uart_write_bytes(UART_NUM_2, mqtt, 71);
-    vTaskDelay(1000 / portTICK_RATE_MS);
+    ESP_LOGI(TAG, "Message length: %d (%d)", message->length, message_id);
+    ESP_LOG_BUFFER_HEXDUMP(TAG, message->data, message->length, ESP_LOG_INFO);
+    uart_write_bytes(UART_NUM_2, (const char *)message->data, message->length);
+    ESP_LOGI(TAG, "CTRL-Z");
+    ESP_LOG_BUFFER_HEXDUMP(TAG, ctrl_z, 1, ESP_LOG_INFO);
+    uart_write_bytes(UART_NUM_2, ctrl_z, 1);
+    vTaskDelay(5000 / portTICK_RATE_MS);
 
     //ESP_LOGD(TAG, "%s", uart_read_line(UART_NUM_2));
 
