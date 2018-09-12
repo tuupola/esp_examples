@@ -63,13 +63,22 @@ void hex2string(char *hex, char *string)
 }
 
 
-void hex2bytes(char *hex, uint16_t hexlen, char *str, uint16_t strlen)
+void hex2bytes(char *hex, uint16_t hexlen, unsigned char *bytes, uint16_t strlen)
 {
     while (hexlen--) {
         unsigned char byte = char2nibble(*hex++);
         byte <<= 4;
         byte += char2nibble(*hex++);
-        *str++ = byte;
+        *bytes++ = byte;
+    }
+}
+
+void bytes2hex(unsigned char *bytes, uint16_t byteslen, char *hex, uint16_t hexlen)
+{
+    while (byteslen--) {
+        unsigned char chr = *bytes++;
+        *hex++ = hexlut[chr >> 4];
+        *hex++ = hexlut[chr & 0xf];
     }
 }
 
@@ -77,23 +86,30 @@ void hex2bytes(char *hex, uint16_t hexlen, char *str, uint16_t strlen)
 
 // int main(void)
 // {
-//     // unsigned char byte = 'A';
-//     // printf("byte:%d\n", byte);
+// //     // unsigned char byte = 'A';
+// //     // printf("byte:%d\n", byte);
 
-//     char hex[32];
-//     // byte2hex(byte, hex);
-//     // printf("hex:%s\n", hex);
+// //     char hex[32];
+// //     // byte2hex(byte, hex);
+// //     // printf("hex:%s\n", hex);
 
-//     // unsigned char byte2 = hex2byte(hex);
-//     // printf("byte2:%d\n", byte2);
+// //     // unsigned char byte2 = hex2byte(hex);
+// //     // printf("byte2:%d\n", byte2);
 
-//     char string[255] = "ABC";
-//     // string2hex(string, hex);
-//     // printf("hex:%s\n", hex);
+// //    char string[255] = "ABC";
+// //     // string2hex(string, hex);
+// //     // printf("hex:%s\n", hex);
 
 //     //hex2string(hex, string);
-//     hex2bytes(MQTT_CONNECT, 54, string, 27);
-//     fwrite(string, 1, 27, stdout);
+
+//     unsigned char bytes[255];
+//     char string[255];
+
+//     hex2bytes(MQTT_CONNECT, 54, bytes, 27);
+//     fwrite(bytes, 1, 27, stdout);
+//     printf("\n");
+//     bytes2hex(bytes, 27, string, 54);
+//     fwrite(string, 1, 54, stdout);
 
 //     return 0;
 // }
