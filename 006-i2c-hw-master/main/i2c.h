@@ -33,18 +33,6 @@ SOFTWARE.
 #define SLAVE_2_DATA_LENGTH     2 /* Two bytes. */
 #define I2C_BUFFER_LENGTH       2 /* Two bytes. */
 
-#define I2C_SLAVE_1_SCL         19 /* Use yellow wire. */
-#define I2C_SLAVE_1_SDA         18 /* Use green wire. */
-#define I2C_SLAVE_1_NUM         I2C_NUM_0
-#define I2C_SLAVE_1_TX_BUF_LEN  (1024 * SLAVE_1_DATA_LENGTH)
-#define I2C_SLAVE_1_RX_BUF_LEN  (1024 * SLAVE_1_DATA_LENGTH)
-
-#define I2C_SLAVE_2_SCL         26 /* Use yellow wire. */
-#define I2C_SLAVE_2_SDA         25 /* Use green wire. */
-#define I2C_SLAVE_2_NUM         I2C_NUM_1
-#define I2C_SLAVE_2_TX_BUF_LEN  (1024 * SLAVE_2_DATA_LENGTH)
-#define I2C_SLAVE_2_RX_BUF_LEN  (1024 * SLAVE_1_DATA_LENGTH)
-
 #define I2C_MASTER_SCL         19 /* Use yellow wire. */
 #define I2C_MASTER_SDA         18 /* Use green wire. */
 #define I2C_MASTER_NUM         I2C_NUM_1
@@ -57,13 +45,11 @@ SOFTWARE.
 #define ACK_VAL                 0x0
 #define NACK_VAL                0x1
 
-void i2c_master_init();
-void i2c_slave_1_init();
-void i2c_slave_2_init();
-void i2c_master_scan();
+void i2c_init();
+void i2c_scan();
 
-esp_err_t i2c_master_probe(uint8_t address);
-uint8_t i2c_read(uint8_t address, uint8_t *buffer, uint16_t length);
+esp_err_t i2c_probe(uint8_t address);
+esp_err_t i2c_read(uint8_t address, uint8_t *buffer, uint16_t length);
 
 #endif
 

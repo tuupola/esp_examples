@@ -29,7 +29,7 @@ SOFTWARE.
 
 static const char* TAG = "i2c";
 
-void i2c_master_init()
+void i2c_init()
 {
     int i2c_master_port = I2C_MASTER_NUM;
     ESP_LOGD(TAG, "Starting I2C master at port %d.", i2c_master_port);
@@ -52,7 +52,7 @@ void i2c_master_init()
     ));
 }
 
-esp_err_t i2c_master_probe(uint8_t address)
+esp_err_t i2c_probe(uint8_t address)
 {
     esp_err_t result;
     i2c_cmd_handle_t cmd = i2c_cmd_link_create();
@@ -67,8 +67,9 @@ esp_err_t i2c_master_probe(uint8_t address)
     return result;
 }
 
-uint8_t i2c_read(uint8_t address, uint8_t *buffer, uint16_t length)
+esp_err_t i2c_read(uint8_t address, uint8_t *buffer, uint16_t length)
 {
+    esp_err_t result;
     i2c_cmd_handle_t cmd = i2c_cmd_link_create();
     ESP_ERROR_CHECK(i2c_master_start(cmd));
     ESP_ERROR_CHECK(
@@ -88,11 +89,11 @@ uint8_t i2c_read(uint8_t address, uint8_t *buffer, uint16_t length)
     );
     ESP_ERROR_CHECK(i2c_master_stop(cmd));
     ESP_ERROR_CHECK(
-        i2c_master_cmd_begin(I2C_MASTER_NUM, cmd, 1000 / portTICK_RATE_MS)
+        result = i2c_master_cmd_begin(I2C_MASTER_NUM, cmd, 1000 / portTICK_RATE_MS)
     );
     i2c_cmd_link_delete(cmd);
 
-    return 0;
+    return result;
 }
 
 // uint8_t i2c_write(uint8_t address, uint8_t *buffer, uint16_t length)

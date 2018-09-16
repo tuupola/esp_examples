@@ -37,7 +37,7 @@ static const char* TAG = "main";
 void i2c_scan_task(void *params)
 {
     while(1) {
-        i2c_master_scan();
+        i2c_scan();
         vTaskDelay(10000 / portTICK_RATE_MS);
     }
 
@@ -67,7 +67,7 @@ void i2c_read_slave_task(void *params)
 
 void app_main()
 {
-    i2c_master_init();
+    i2c_init();
 
     xTaskCreatePinnedToCore(i2c_scan_task, "Scan i2c", 2048, NULL, 1, NULL, 1);
     xTaskCreatePinnedToCore(i2c_read_slave_task, "Read i2c slave", 2048, NULL, 1, NULL, 1);
