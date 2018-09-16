@@ -48,14 +48,8 @@ void i2c_slave_1_fill_task(void *params)
             SLAVE_1_DATA_LENGTH,
             1000 / portTICK_RATE_MS
         );
-        ESP_LOGI(TAG, "Wrote %d bytes to slave 1.", data_size);
-
-        ESP_LOG_BUFFER_HEXDUMP(
-            TAG,
-            (uint8_t *) data_write,
-            data_size,
-            ESP_LOG_INFO
-        );
+        ESP_LOGD(TAG, "Wrote %d bytes to slave 1.", data_size);
+        ESP_LOG_BUFFER_HEX("0x11", data_write, SLAVE_1_DATA_LENGTH);
 
         *data_write += 1;
 
@@ -77,14 +71,8 @@ void i2c_slave_2_fill_task(void *params)
             SLAVE_2_DATA_LENGTH,
             1000 / portTICK_RATE_MS
         );
-        ESP_LOGI(TAG, "Wrote %d bytes to slave 2.", data_size);
-
-        ESP_LOG_BUFFER_HEXDUMP(
-            TAG,
-            (uint8_t *) data_write,
-            data_size,
-            ESP_LOG_INFO
-        );
+        ESP_LOGD(TAG, "Wrote %d bytes to slave 2.", data_size);
+        ESP_LOG_BUFFER_HEX("0x12", data_write, SLAVE_2_DATA_LENGTH);
 
         *data_write += 1;
 
