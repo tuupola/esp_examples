@@ -118,8 +118,9 @@ void demo_task(void *params)
     while (1) {
         //xSemaphoreTake(mutex, portMAX_DELAY);
 
+        //demo = 4;
+
         if (0 == demo % 10) {
-        //if (true) {
             /* Random five sided filled polygons, 540 per second. */
             int16_t x0 = (rand() % 360) - 20; /* -20 ... 360 */
             int16_t y0 = (rand() % 240) + 20; /*  20 ... 260 */
@@ -136,7 +137,6 @@ void demo_task(void *params)
             uint16_t colour = rand() % 0xffff;
             pod_fillpolygon(5, vertices, colour);
         } else if (0 == demo % 9) {
-        //if (true) {
             /* Random five sided polygons, 1900 per second. */
             int16_t x0 = (rand() % 360) - 20; /* -20 ... 360 */
             int16_t y0 = (rand() % 240) + 20; /*  20 ... 260 */
@@ -247,6 +247,7 @@ void app_main()
     ESP_LOGI(TAG, "Heap when starting: %d", esp_get_free_heap_size());
 
     pod_init();
+    pod_clip_window(30, 30, 290, 210);
 
     ESP_LOGI(TAG, "Heap after pod init: %d", esp_get_free_heap_size());
 

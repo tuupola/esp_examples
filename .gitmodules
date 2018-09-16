@@ -55,3 +55,9 @@
 [submodule "014-mandelbrot/components/esp-ili9341"]
 	path = 014-mandelbrot/components/esp-ili9341
 	url = git@github.com:tuupola/esp-ili9341.git
+[submodule "013-mqtt-at/components/esp-mqtt"]
+	path = 013-mqtt-at/components/esp-mqtt
+	url = git@github.com:espressif/esp-mqtt.git
+[submodule "013-mqtt-at/components/mqtt-protocol-c/mqtt-protocol-c"]
+	path = 013-mqtt-at/components/mqtt-protocol-c/mqtt-protocol-c
+	url = git@github.com:deoxxa/mqtt-protocol-c.git
