@@ -66,3 +66,36 @@ esp_err_t i2c_master_probe(uint8_t address)
 
     return result;
 }
+
+uint8_t i2c_read(uint8_t address, uint8_t *buffer, uint16_t length)
+{
+    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
+    ESP_ERROR_CHECK(i2c_master_start(cmd));
+    ESP_ERROR_CHECK(
+        i2c_master_write_byte(
+            cmd,
+            (address << 1) | I2C_MASTER_READ,
+            ACK_CHECK_ENABLE
+        )
+    );
+    if (length > 1) {
+        ESP_ERROR_CHECK(
+            i2c_master_read(cmd, buffer, length - 1, ACK_VAL)
+        );
+    }
+    ESP_ERROR_CHECK(
+        i2c_master_read_byte(cmd, buffer + length - 1, NACK_VAL)
+    );
+    ESP_ERROR_CHECK(i2c_master_stop(cmd));
+    ESP_ERROR_CHECK(
+        i2c_master_cmd_begin(I2C_MASTER_NUM, cmd, 1000 / portTICK_RATE_MS)
+    );
+    i2c_cmd_link_delete(cmd);
+
+    return 0;
+}
+
+// uint8_t i2c_write(uint8_t address, uint8_t *buffer, uint16_t length)
+// {
+
+// }
