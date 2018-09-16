@@ -28,8 +28,10 @@ SOFTWARE.
 #define SPEKTRUM_DATA_LENGTH    16
 #define TELE_DEVICE_AIRSPEED    0x11
 #define TELE_DEVICE_ALTITUDE    0x12
+
 #define SLAVE_1_DATA_LENGTH     1 /* One byte. */
 #define SLAVE_2_DATA_LENGTH     2 /* Two bytes. */
+#define I2C_BUFFER_LENGTH       2 /* Two bytes. */
 
 #define I2C_SLAVE_1_SCL         19 /* Use yellow wire. */
 #define I2C_SLAVE_1_SDA         18 /* Use green wire. */
