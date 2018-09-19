@@ -11,7 +11,7 @@
 #define UART_INTR_FLAGS     0
 
 void uart_init();
-char *uart_read_line(uart_port_t uart_port);
 void uart_task(void *params);
+esp_err_t uart_read_line(uart_port_t uart_port, char *buffer);
 
 #endif
