@@ -3,6 +3,6 @@
 # project subdirectory.
 #
 
-PROJECT_NAME := gfx_demo
+PROJECT_NAME := m5stack-gfx
 
 include $(IDF_PATH)/make/project.mk
