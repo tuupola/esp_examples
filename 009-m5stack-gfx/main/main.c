@@ -67,9 +67,7 @@ void framebuffer_task(void *params)
 }
 
 /*
- * Displays the info bar on top of the screen. Separate FPS values
- * for the fire effect and the framebuffer. Effect is actually drawn
- * faster the display is refreshed.
+ * Displays the info bar on top of the screen.
  */
 void fps_task(void *params)
 {
@@ -78,18 +76,18 @@ void fps_task(void *params)
 
 #ifdef CONFIG_POD_HAL_USE_FRAMEBUFFER
     while (1) {
-        sprintf(message, " FX %.*f FPS              FB %.*f FPS", 1, fx_fps, 1, fb_fps);
-        pod_put_text(message, 0, 4, color, font8x8);
+        sprintf(message, "FX %.*f FPS          ", 1, fx_fps);
+        pod_put_text(message, 8, 4, color, font8x8);
+        sprintf(message, "FB %.*f FPS  ", 1, fb_fps);
+        pod_put_text(message, 224, 4, color, font8x8);
         ESP_LOGI(TAG, "FX %.*f FPS / FB %.*f FPS", 1, fx_fps, 1, fb_fps);
 
         vTaskDelay(1000 / portTICK_RATE_MS);
     }
 #else
     while (1) {
-        sprintf(message, " FX %.*f FPS", 1, fx_fps);
-        //xSemaphoreTake(mutex, portMAX_DELAY);
+        sprintf(message, "FX %.*f FPS          ", 1, fx_fps);
         pod_put_text(message, 0, 4, color, font8x8);
-        //xSemaphoreGive(mutex);
         ESP_LOGI(TAG, "FX %.*f FPS", 1, fx_fps);
 
         vTaskDelay(1000 / portTICK_RATE_MS);
@@ -101,10 +99,9 @@ void fps_task(void *params)
 void switch_task(void *params)
 {
     while (1) {
-        //pod_cls();
         demo = (demo + 1) % 12;
         fx_fps = fps2(true);
-        //vTaskDelay(10000 / portTICK_RATE_MS);
+        pod_fill_rectangle(0, 0, DISPLAY_WIDTH - 1, DISPLAY_HEIGHT -1, RGB565(0, 0, 255));
         vTaskDelay(3000 / portTICK_RATE_MS);
     }
 
@@ -196,7 +193,9 @@ void fill_rectangle_demo()
 void put_character_demo()
 {
     int16_t x0 = (rand() % 360) - 20; /* -20 ... 340 */
-    int16_t y0 = (rand() % 280) - 20; /* -20 ... 260 */
+    //int16_t y0 = (rand() % 280) - 20; /* -20 ... 260 */
+    /* IlI9341 blit does not handle clip window yet... */
+    int16_t y0 = (rand() % 220) + 20; /* 20 ... 240 */
 
     uint16_t colour = rand() % 0xffff;
     char ascii = rand() % 127;
@@ -206,7 +205,9 @@ void put_character_demo()
 void put_text_demo()
 {
     int16_t x0 = (rand() % 360) - 20; /* -20 ... 340 */
-    int16_t y0 = (rand() % 280) - 20; /* -20 ... 260 */
+    //int16_t y0 = (rand() % 280) - 20; /* -20 ... 260 */
+    /* IlI9341 blit does not handle clip window yet... */
+    int16_t y0 = (rand() % 220) + 20; /* 20 ... 240 */
 
     uint16_t colour = rand() % 0xffff;
     pod_put_text("YO! MTV raps.", x0, y0, colour, font8x8);
@@ -245,13 +246,22 @@ void fill_triangle_demo()
     pod_fill_triangle(x0, y0, x1, y1, x2, y2, colour);
 }
 
+void rgb_demo()
+{
+    uint16_t red = RGB565(255, 0, 0);
+    uint16_t green = RGB565(0, 255, 0);
+    uint16_t blue = RGB565(0, 0, 255);
+    pod_fill_rectangle(0, 0, 106, 239, red);
+    pod_fill_rectangle(107, 0, 212, 239, green);
+    pod_fill_rectangle(213, 0, 319, 239, blue);
+}
+
 void demo_task(void *params)
 {
     while (1) {
         //xSemaphoreTake(mutex, portMAX_DELAY);
-
         if (0 == demo) {
-            put_text_demo();
+            rgb_demo();
         } else if (1 == demo) {
             put_character_demo();
         } else if (2 == demo) {
@@ -274,7 +284,10 @@ void demo_task(void *params)
             polygon_demo();
         } else if (11 == demo) {
             fill_polygon_demo();
+        } else if (12 == demo) {
+            put_text_demo();
         }
+
         /* Update the FX fps counter. */
         fx_fps = fps2(false);
 
@@ -291,7 +304,7 @@ void app_main()
     ESP_LOGI(TAG, "Heap when starting: %d", esp_get_free_heap_size());
 
     pod_init();
-    pod_set_clip_window(0, 20, DISPLAY_WIDTH - 2, DISPLAY_HEIGHT - 1);
+    pod_set_clip_window(0, 20, DISPLAY_WIDTH - 1, DISPLAY_HEIGHT - 1);
 
     ESP_LOGI(TAG, "Heap after pod init: %d", esp_get_free_heap_size());
 
@@ -301,7 +314,7 @@ void app_main()
 #ifdef CONFIG_POD_HAL_USE_FRAMEBUFFER
         xTaskCreatePinnedToCore(framebuffer_task, "Framebuffer", 8192, NULL, 1, NULL, 0);
 #endif
-        /* xTaskCreatePinnedToCore(fps_task, "FPS", 8092, NULL, 2, NULL, 1); */
+        xTaskCreatePinnedToCore(fps_task, "FPS", 8092, NULL, 2, NULL, 1);
         xTaskCreatePinnedToCore(demo_task, "Demo", 4096, NULL, 1, NULL, 1);
         xTaskCreatePinnedToCore(switch_task, "Switch", 2048, NULL, 2, NULL, 0);
     } else {
