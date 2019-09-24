@@ -61,3 +61,18 @@
 [submodule "013-mqtt-at/components/mqtt-protocol-c/mqtt-protocol-c"]
 	path = 013-mqtt-at/components/mqtt-protocol-c/mqtt-protocol-c
 	url = git@github.com:deoxxa/mqtt-protocol-c.git
+[submodule "015-m5stick-gfx/components/esp-st7735s"]
+	path = 015-m5stick-gfx/components/esp-st7735s
+	url = git@github.com:tuupola/esp-st7735s.git
+[submodule "015-m5stick-gfx/components/copepod"]
+	path = 015-m5stick-gfx/components/copepod
+	url = git@github.com:tuupola/copepod.git
+[submodule "015-m5stick-gfx/components/copepod-esp-st7735s"]
+	path = 015-m5stick-gfx/components/copepod-esp-st7735s
+	url = git@github.com:tuupola/copepod-esp-st7735s.git
+[submodule "015-m5stick-gfx/components/axp192"]
+	path = 015-m5stick-gfx/components/axp192
+	url = git@github.com:tuupola/axp192.git
+[submodule "015-m5stick-gfx/components/esp-i2c-hal"]
+	path = 015-m5stick-gfx/components/esp-i2c-hal
+	url = git@github.com:tuupola/esp-i2c-hal.git
