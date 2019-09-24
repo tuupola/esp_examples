@@ -27,6 +27,7 @@ SOFTWARE.
 #include <string.h>
 
 #include <freertos/FreeRTOS.h>
+#include <freertos/semphr.h>
 #include <freertos/task.h>
 #include <esp_log.h>
 #include <esp_task_wdt.h>
@@ -80,7 +81,7 @@ void fps_task(void *params)
     while (1) {
         color = RGB565(0, 0, 255);
         sprintf(message, " FX %.*f FPS                FB %.*f FPS", 1, fx_fps, 1, fb_fps);
-        pod_puttext(message, 0, 4, color, font8x8_basic);
+        pod_put_text(message, 0, 4, color, font8x8);
 
         ESP_LOGI(TAG, "FX %.*f FPS / FB %.*f FPS", 1, fx_fps, 1, fb_fps);
 
@@ -101,9 +102,13 @@ void fire_task(void *params)
     bitmap_t bitmap = {
         .width = FIRE_WIDTH,
         .height = FIRE_HEIGHT,
-        .depth = 16,
+        .depth = DISPLAY_DEPTH,
     };
-    bitmap_init(&bitmap);
+
+    /* But buffer to heap, there was not enough stack. */
+    uint8_t *buffer = malloc(bitmap_size(&bitmap));
+
+    bitmap_init(&bitmap, buffer);
     ESP_LOGI(TAG, "Heap after fire bitmap: %d", esp_get_free_heap_size());
 
     fire_init();
@@ -113,7 +118,7 @@ void fire_task(void *params)
 
         /* Fine sire scroller. */
         if (0 == demo % 3) {
-            fire_putstring(" IS IT 90'S AGAIN?      HELLO M5STACK!      THANKS LODE...", sx, FIRE_HEIGHT / 2, font8x8_basic);
+            fire_putstring(" IS IT 90'S AGAIN?      HELLO M5STACK!      THANKS LODE...", sx, FIRE_HEIGHT / 2, font8x8);
 
             sx = sx - 1;
             if (sx < -440) {
@@ -125,13 +130,13 @@ void fire_task(void *params)
 
         /* Static M5Stack text. */
         if (1 == demo % 3) {
-            fire_putchar('M', (FIRE_WIDTH / 2) - 28, (FIRE_HEIGHT / 2) - 2, font8x8_basic);
-            fire_putchar('5', (FIRE_WIDTH / 2) - 20, (FIRE_HEIGHT / 2), font8x8_basic);
-            fire_putchar('S', (FIRE_WIDTH / 2) - 12, (FIRE_HEIGHT / 2) + 2, font8x8_basic);
-            fire_putchar('T', (FIRE_WIDTH / 2) - 4, (FIRE_HEIGHT / 2) + 3, font8x8_basic);
-            fire_putchar('A', (FIRE_WIDTH / 2) + 4, (FIRE_HEIGHT / 2), font8x8_basic);
-            fire_putchar('C', (FIRE_WIDTH / 2) + 12, (FIRE_HEIGHT / 2) - 2, font8x8_basic);
-            fire_putchar('K', (FIRE_WIDTH / 2) + 20, (FIRE_HEIGHT / 2) - 1, font8x8_basic);
+            fire_putchar('M', (FIRE_WIDTH / 2) - 28, (FIRE_HEIGHT / 2) - 2, font8x8);
+            fire_putchar('5', (FIRE_WIDTH / 2) - 20, (FIRE_HEIGHT / 2), font8x8);
+            fire_putchar('S', (FIRE_WIDTH / 2) - 12, (FIRE_HEIGHT / 2) + 2, font8x8);
+            fire_putchar('T', (FIRE_WIDTH / 2) - 4, (FIRE_HEIGHT / 2) + 3, font8x8);
+            fire_putchar('A', (FIRE_WIDTH / 2) + 4, (FIRE_HEIGHT / 2), font8x8);
+            fire_putchar('C', (FIRE_WIDTH / 2) + 12, (FIRE_HEIGHT / 2) - 2, font8x8);
+            fire_putchar('K', (FIRE_WIDTH / 2) + 20, (FIRE_HEIGHT / 2) - 1, font8x8);
             fire_effect(&bitmap, 30, 130);
         }
 
@@ -147,11 +152,7 @@ void fire_task(void *params)
 
         /* Update the FX fps counter. */
         fx_fps = fps2();
-
-        //vTaskDelay(10 / portTICK_RATE_MS);
     }
-
-    bitmap_destroy(&bitmap);
 
     vTaskDelete(NULL);
 }

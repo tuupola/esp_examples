@@ -34,12 +34,12 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <stdint.h>
 #include <bitmap.h>
 
-#define FIRE_WIDTH      110
-#define FIRE_HEIGHT     80
+#define FIRE_WIDTH      (110)
+#define FIRE_HEIGHT     (80)
 
 void fire_init();
 void fire_clear();
 void fire_feed();
 void fire_effect(bitmap_t *dst, uint16_t multiplier, uint16_t divider);
-void fire_putchar(char ascii, int16_t x0, int16_t y0, char font[128][8]);
-void fire_putstring(char ascii[], int16_t x0, int16_t y0, char font[128][8]);
+void fire_putchar(char ascii, int16_t x0, int16_t y0, const char font[][8]);
+void fire_putstring(char ascii[], int16_t x0, int16_t y0, const char font[][8]);

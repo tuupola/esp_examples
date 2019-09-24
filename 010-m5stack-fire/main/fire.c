@@ -38,7 +38,6 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <string.h>
 #include <stdio.h>
 
-#include <blit.h>
 #include <bitmap.h>
 #include <esp_log.h>
 
@@ -65,9 +64,10 @@ void fire_init()
         hsl.s = 255;
         hsl.l = min(255, x * 2);
 
-        hsl2rgb(&hsl, &rgb);
+        rgb = hsl_to_rgb888(&hsl);
 
         color = RGB565(rgb.r, rgb.g, rgb.b);
+        //g_palette[x] = color;
         g_palette[x] = BSWAP_16(color);
     }
 
@@ -112,13 +112,17 @@ void fire_feed()
 }
 
 
-void fire_putchar(char ascii, int16_t x0, int16_t y0, char font[128][8])
+void fire_putchar(char ascii, int16_t x0, int16_t y0, const char font[][8])
 {
 
     /* Basic clipping. */
     if ((x0 < 0) || (y0 < 0) || (x0 > FIRE_WIDTH - 8 ) || (y0 > FIRE_HEIGHT - 8)) {
         return;
     }
+
+    /* First row is the font settings. */
+    ascii = ascii & 0x7F;
+    ascii = ascii + 1;
 
     uint8_t color = (rand() % 55) + 100;
     uint8_t *ptr = g_fire[0];
@@ -137,7 +141,7 @@ void fire_putchar(char ascii, int16_t x0, int16_t y0, char font[128][8])
     }
 }
 
-void fire_putstring(char ascii[], int16_t x0, int16_t y0, char font[128][8])
+void fire_putstring(char ascii[], int16_t x0, int16_t y0, const char font[][8])
 {
     for (uint8_t i = 0; i < strlen(ascii); i++) {
         uint8_t amp =  abs(sin(0.035 * x0) * 10);
