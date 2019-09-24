@@ -34,7 +34,6 @@ SOFTWARE.
 #include <esp_task_wdt.h>
 
 #include "bitmap.h"
-#include "byteswap.h"
 #include "ili9341.h"
 #include "copepod.h"
 #include "copepod-hal.h"
@@ -44,6 +43,7 @@ SOFTWARE.
 #include "sdkconfig.h"
 
 static const char *TAG = "main";
+static char primitive[32];
 
 static SemaphoreHandle_t mutex;
 static float fb_fps;
@@ -51,12 +51,18 @@ static float fx_fps;
 static uint16_t demo = 0;
 
 /*
- * Flushes the framebuffer to display in a loop. With the ILI9341 DMA
- * driver can currently do 29 FPS.
+ * Flushes the framebuffer to display in a loop. M5Stick can currently
+ * do about 85 fps. This demo has has fps capped to 30 fps.
  */
 void framebuffer_task(void *params)
 {
+    // TickType_t last;
+    // const TickType_t frequency = 1000 / 30 / portTICK_RATE_MS;
+
+    // last = xTaskGetTickCount();
+
     while (1) {
+        //vTaskDelayUntil(&last, frequency);
         xSemaphoreTake(mutex, portMAX_DELAY);
         pod_flush();
         xSemaphoreGive(mutex);
@@ -76,18 +82,18 @@ void fps_task(void *params)
 
 #ifdef CONFIG_POD_HAL_USE_FRAMEBUFFER
     while (1) {
-        sprintf(message, "FX %.*f FPS          ", 1, fx_fps);
-        pod_put_text(message, 8, 4, color, font8x8);
-        sprintf(message, "FB %.*f FPS  ", 1, fb_fps);
+        // sprintf(message, "FX %.*f FPS          ", 1, fx_fps);
+        // pod_put_text(message, 8, 4, color, font8x8);
+        // sprintf(message, "FB %.*f FPS  ", 1, fb_fps);
         pod_put_text(message, 224, 4, color, font8x8);
-        ESP_LOGI(TAG, "FX %.*f FPS / FB %.*f FPS", 1, fx_fps, 1, fb_fps);
+        ESP_LOGI(TAG, "%.*f %s per second, FB %.*f FPS", 1, fx_fps, primitive, 1, fb_fps);
 
         vTaskDelay(1000 / portTICK_RATE_MS);
     }
 #else
     while (1) {
-        sprintf(message, "FX %.*f FPS          ", 1, fx_fps);
-        pod_put_text(message, 0, 4, color, font8x8);
+        // sprintf(message, "FX %.*f FPS          ", 1, fx_fps);
+        // pod_put_text(message, 0, 4, color, font8x8);
         ESP_LOGI(TAG, "FX %.*f FPS", 1, fx_fps);
 
         vTaskDelay(1000 / portTICK_RATE_MS);
@@ -101,8 +107,8 @@ void switch_task(void *params)
     while (1) {
         demo = (demo + 1) % 12;
         fx_fps = fps2(true);
-        pod_fill_rectangle(0, 0, DISPLAY_WIDTH - 1, DISPLAY_HEIGHT -1, RGB565(0, 0, 255));
-        vTaskDelay(3000 / portTICK_RATE_MS);
+        pod_fill_rectangle(0, 0, DISPLAY_WIDTH - 1, DISPLAY_HEIGHT -1, RGB565(0, 0, 0));
+        vTaskDelay(5000 / portTICK_RATE_MS);
     }
 
     vTaskDelete(NULL);
@@ -110,16 +116,18 @@ void switch_task(void *params)
 
 void polygon_demo()
 {
-    int16_t x0 = (rand() % 360) - 20; /* -20 ... 340 */
-    int16_t y0 = (rand() % 280) - 20; /* -20 ... 260 */
-    int16_t x1 = (rand() % 360) - 20; /* -20 ... 340 */
-    int16_t y1 = (rand() % 280) - 20; /* -20 ... 260 */
-    int16_t x2 = (rand() % 360) - 20; /* -20 ... 340 */
-    int16_t y2 = (rand() % 280) - 20; /* -20 ... 260 */
-    int16_t x3 = (rand() % 360) - 20; /* -20 ... 340 */
-    int16_t y3 = (rand() % 280) - 20; /* -20 ... 260 */
-    int16_t x4 = (rand() % 360) - 20; /* -20 ... 340 */
-    int16_t y4 = (rand() % 280) - 20; /* -20 ... 260 */
+    strcpy(primitive, "polygons");
+
+    int16_t x0 = (rand() % DISPLAY_WIDTH + 20) - 20;
+    int16_t y0 = (rand() % DISPLAY_HEIGHT + 20) - 20;
+    int16_t x1 = (rand() % DISPLAY_WIDTH + 20) - 20;
+    int16_t y1 = (rand() % DISPLAY_HEIGHT + 20) - 20;
+    int16_t x2 = (rand() % DISPLAY_WIDTH + 20) - 20;
+    int16_t y2 = (rand() % DISPLAY_HEIGHT + 20) - 20;
+    int16_t x3 = (rand() % DISPLAY_WIDTH + 20) - 20;
+    int16_t y3 = (rand() % DISPLAY_HEIGHT + 20) - 20;
+    int16_t x4 = (rand() % DISPLAY_WIDTH + 20) - 20;
+    int16_t y4 = (rand() % DISPLAY_HEIGHT + 20) - 20;
     uint16_t colour = rand() % 0xffff;
     int16_t vertices[10] = {x0, y0, x1, y1, x2, y2, x3, y3, x4, y4};
     pod_draw_polygon(5, vertices, colour);
@@ -127,16 +135,18 @@ void polygon_demo()
 
 void fill_polygon_demo()
 {
-    int16_t x0 = (rand() % 360) - 20; /* -20 ... 340 */
-    int16_t y0 = (rand() % 280) - 20; /* -20 ... 260 */
-    int16_t x1 = (rand() % 360) - 20; /* -20 ... 340 */
-    int16_t y1 = (rand() % 280) - 20; /* -20 ... 260 */
-    int16_t x2 = (rand() % 360) - 20; /* -20 ... 340 */
-    int16_t y2 = (rand() % 280) - 20; /* -20 ... 260 */
-    int16_t x3 = (rand() % 360) - 20; /* -20 ... 340 */
-    int16_t y3 = (rand() % 280) - 20; /* -20 ... 260 */
-    int16_t x4 = (rand() % 360) - 20; /* -20 ... 340 */
-    int16_t y4 = (rand() % 280) - 20; /* -20 ... 260 */
+    strcpy(primitive, "filled polygons");
+
+    int16_t x0 = (rand() % DISPLAY_WIDTH + 20) - 20;
+    int16_t y0 = (rand() % DISPLAY_HEIGHT + 20) - 20;
+    int16_t x1 = (rand() % DISPLAY_WIDTH + 20) - 20;
+    int16_t y1 = (rand() % DISPLAY_HEIGHT + 20) - 20;
+    int16_t x2 = (rand() % DISPLAY_WIDTH + 20) - 20;
+    int16_t y2 = (rand() % DISPLAY_HEIGHT + 20) - 20;
+    int16_t x3 = (rand() % DISPLAY_WIDTH + 20) - 20;
+    int16_t y3 = (rand() % DISPLAY_HEIGHT + 20) - 20;
+    int16_t x4 = (rand() % DISPLAY_WIDTH + 20) - 20;
+    int16_t y4 = (rand() % DISPLAY_HEIGHT + 20) - 20;
     uint16_t colour = rand() % 0xffff;
     int16_t vertices[10] = {x0, y0, x1, y1, x2, y2, x3, y3, x4, y4};
     pod_fill_polygon(5, vertices, colour);
@@ -144,8 +154,10 @@ void fill_polygon_demo()
 
 void circle_demo()
 {
-    int16_t x0 = (rand() % 360) - 20; /* -20 ... 340 */
-    int16_t y0 = (rand() % 280) - 20; /* -20 ... 260 */
+    strcpy(primitive, "circles");
+
+    int16_t x0 = (rand() % DISPLAY_WIDTH + 20) - 20;
+    int16_t y0 = (rand() % DISPLAY_HEIGHT + 20) - 20;
     uint16_t r = (rand() % 40);
     uint16_t colour = rand() % 0xffff;
     pod_draw_circle(x0, y0, r, colour);
@@ -153,8 +165,10 @@ void circle_demo()
 
 void fill_circle_demo()
 {
-    int16_t x0 = (rand() % 360) - 20; /* -20 ... 340 */
-    int16_t y0 = (rand() % 280) - 20; /* -20 ... 260 */
+    strcpy(primitive, "filled circles");
+
+    int16_t x0 = (rand() % DISPLAY_WIDTH + 20) - 20;
+    int16_t y0 = (rand() % DISPLAY_HEIGHT + 20) - 20;
     uint16_t r = (rand() % 40);
     uint16_t colour = rand() % 0xffff;
     pod_fill_circle(x0, y0, r, colour);
@@ -162,40 +176,46 @@ void fill_circle_demo()
 
 void line_demo()
 {
-    int16_t x0 = (rand() % 360) - 20; /* -20 ... 340 */
-    int16_t y0 = (rand() % 280) - 20; /* -20 ... 260 */
-    int16_t x1 = (rand() % 360) - 20; /* -20 ... 340 */
-    int16_t y1 = (rand() % 280) - 20; /* -20 ... 260 */
+    strcpy(primitive, "lines");
+
+    int16_t x0 = (rand() % DISPLAY_WIDTH + 20) - 20;
+    int16_t y0 = (rand() % DISPLAY_HEIGHT + 20) - 20;
+    int16_t x1 = (rand() % DISPLAY_WIDTH + 20) - 20;
+    int16_t y1 = (rand() % DISPLAY_HEIGHT + 20) - 20;
     uint16_t colour = rand() % 0xffff;
     pod_draw_line(x0, y0, x1, y1, colour);
 }
 
 void rectangle_demo()
 {
-    int16_t x0 = (rand() % 360) - 20; /* -20 ... 340 */
-    int16_t y0 = (rand() % 280) - 20; /* -20 ... 260 */
-    int16_t x1 = (rand() % 360) - 20; /* -20 ... 340 */
-    int16_t y1 = (rand() % 280) - 20; /* -20 ... 260 */
+    strcpy(primitive, "rectangles");
+
+    int16_t x0 = (rand() % DISPLAY_WIDTH + 20) - 20;
+    int16_t y0 = (rand() % DISPLAY_HEIGHT + 20) - 20;
+    int16_t x1 = (rand() % DISPLAY_WIDTH + 20) - 20;
+    int16_t y1 = (rand() % DISPLAY_HEIGHT + 20) - 20;
     uint16_t colour = rand() % 0xffff;
     pod_draw_rectangle(x0, y0, x1, y1, colour);
 }
 
 void fill_rectangle_demo()
 {
-    int16_t x0 = (rand() % 360) - 20; /* -20 ... 340 */
-    int16_t y0 = (rand() % 280) - 20; /* -20 ... 260 */
-    int16_t x1 = (rand() % 360) - 20; /* -20 ... 340 */
-    int16_t y1 = (rand() % 280) - 20; /* -20 ... 260 */
+    strcpy(primitive, "filled rectangles");
+
+    int16_t x0 = (rand() % DISPLAY_WIDTH + 20) - 20;
+    int16_t y0 = (rand() % DISPLAY_HEIGHT + 20) - 20;
+    int16_t x1 = (rand() % DISPLAY_WIDTH + 20) - 20;
+    int16_t y1 = (rand() % DISPLAY_HEIGHT + 20) - 20;
     uint16_t colour = rand() % 0xffff;
     pod_fill_rectangle(x0, y0, x1, y1, colour);
 }
 
 void put_character_demo()
 {
-    int16_t x0 = (rand() % 360) - 20; /* -20 ... 340 */
-    //int16_t y0 = (rand() % 280) - 20; /* -20 ... 260 */
-    /* IlI9341 blit does not handle clip window yet... */
-    int16_t y0 = (rand() % 220) + 20; /* 20 ... 240 */
+    strcpy(primitive, "characters");
+
+    int16_t x0 = (rand() % DISPLAY_WIDTH + 20) - 20;
+    int16_t y0 = (rand() % DISPLAY_HEIGHT + 20) - 20;
 
     uint16_t colour = rand() % 0xffff;
     char ascii = rand() % 127;
@@ -204,10 +224,10 @@ void put_character_demo()
 
 void put_text_demo()
 {
-    int16_t x0 = (rand() % 360) - 20; /* -20 ... 340 */
-    //int16_t y0 = (rand() % 280) - 20; /* -20 ... 260 */
-    /* IlI9341 blit does not handle clip window yet... */
-    int16_t y0 = (rand() % 220) + 20; /* 20 ... 240 */
+    strcpy(primitive, "strings");
+
+    int16_t x0 = (rand() % DISPLAY_WIDTH + 20) - 20;
+    int16_t y0 = (rand() % DISPLAY_HEIGHT + 20) - 20;
 
     uint16_t colour = rand() % 0xffff;
     pod_put_text("YO! MTV raps.", x0, y0, colour, font8x8);
@@ -215,8 +235,10 @@ void put_text_demo()
 
 void put_pixel_demo()
 {
-    int16_t x0 = (rand() % 360) - 20; /* -20 ... 340 */
-    int16_t y0 = (rand() % 280) - 20; /* -20 ... 260 */
+    strcpy(primitive, "pixels");
+
+    int16_t x0 = (rand() % DISPLAY_WIDTH + 20) - 20;
+    int16_t y0 = (rand() % DISPLAY_HEIGHT + 20) - 20;
 
     uint16_t colour = rand() % 0xffff;
     pod_put_pixel(x0, y0, colour);
@@ -224,42 +246,47 @@ void put_pixel_demo()
 
 void triangle_demo()
 {
-    int16_t x0 = (rand() % 360) - 20; /* -20 ... 340 */
-    int16_t y0 = (rand() % 280) - 20; /* -20 ... 260 */
-    int16_t x1 = (rand() % 360) - 20; /* -20 ... 340 */
-    int16_t y1 = (rand() % 280) - 20; /* -20 ... 260 */
-    int16_t x2 = (rand() % 360) - 20; /* -20 ... 340 */
-    int16_t y2 = (rand() % 280) - 20; /* -20 ... 260 */
+    strcpy(primitive, "triangles");
+
+    int16_t x0 = (rand() % DISPLAY_WIDTH + 20) - 20;
+    int16_t y0 = (rand() % DISPLAY_HEIGHT + 20) - 20;
+    int16_t x1 = (rand() % DISPLAY_WIDTH + 20) - 20;
+    int16_t y1 = (rand() % DISPLAY_HEIGHT + 20) - 20;
+    int16_t x2 = (rand() % DISPLAY_WIDTH + 20) - 20;
+    int16_t y2 = (rand() % DISPLAY_HEIGHT + 20) - 20;
     uint16_t colour = rand() % 0xffff;
     pod_draw_triangle(x0, y0, x1, y1, x2, y2, colour);
 }
 
 void fill_triangle_demo()
 {
-    int16_t x0 = (rand() % 360) - 20; /* -20 ... 340 */
-    int16_t y0 = (rand() % 280) - 20; /* -20 ... 260 */
-    int16_t x1 = (rand() % 360) - 20; /* -20 ... 340 */
-    int16_t y1 = (rand() % 280) - 20; /* -20 ... 260 */
-    int16_t x2 = (rand() % 360) - 20; /* -20 ... 340 */
-    int16_t y2 = (rand() % 280) - 20; /* -20 ... 260 */
+    strcpy(primitive, "filled triangles");
+
+    int16_t x0 = (rand() % DISPLAY_WIDTH + 20) - 20;
+    int16_t y0 = (rand() % DISPLAY_HEIGHT + 20) - 20;
+    int16_t x1 = (rand() % DISPLAY_WIDTH + 20) - 20;
+    int16_t y1 = (rand() % DISPLAY_HEIGHT + 20) - 20;
+    int16_t x2 = (rand() % DISPLAY_WIDTH + 20) - 20;
+    int16_t y2 = (rand() % DISPLAY_HEIGHT + 20) - 20;
     uint16_t colour = rand() % 0xffff;
     pod_fill_triangle(x0, y0, x1, y1, x2, y2, colour);
 }
 
 void rgb_demo()
 {
+    strcpy(primitive, "rgb bars");
+
     uint16_t red = RGB565(255, 0, 0);
     uint16_t green = RGB565(0, 255, 0);
     uint16_t blue = RGB565(0, 0, 255);
-    pod_fill_rectangle(0, 0, 106, 239, red);
-    pod_fill_rectangle(107, 0, 212, 239, green);
-    pod_fill_rectangle(213, 0, 319, 239, blue);
+    pod_fill_rectangle(0, 0, DISPLAY_WIDTH / 3, DISPLAY_HEIGHT, red);
+    pod_fill_rectangle(DISPLAY_WIDTH / 3, 0, DISPLAY_WIDTH / 3 * 2, DISPLAY_HEIGHT, green);
+    pod_fill_rectangle(DISPLAY_WIDTH / 3 * 2, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT, blue);
 }
 
 void demo_task(void *params)
 {
     while (1) {
-        //xSemaphoreTake(mutex, portMAX_DELAY);
         if (0 == demo) {
             rgb_demo();
         } else if (1 == demo) {
@@ -290,8 +317,6 @@ void demo_task(void *params)
 
         /* Update the FX fps counter. */
         fx_fps = fps2(false);
-
-        //vTaskDelay(100 / portTICK_RATE_MS);
     }
 
 
