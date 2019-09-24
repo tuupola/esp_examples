@@ -45,6 +45,7 @@ SOFTWARE.
 #include "sdkconfig.h"
 
 static const char *TAG = "main";
+static char primitive[32];
 
 static SemaphoreHandle_t mutex;
 static float fb_fps;
@@ -53,11 +54,17 @@ static uint16_t demo = 0;
 
 /*
  * Flushes the framebuffer to display in a loop. M5Stick can currently
- * do about 85 fps.
+ * do about 85 fps. This demo has has fps capped to 30 fps.
  */
 void framebuffer_task(void *params)
 {
+    TickType_t last;
+    const TickType_t frequency = 1000 / 30 / portTICK_RATE_MS;
+
+    last = xTaskGetTickCount();
+
     while (1) {
+        vTaskDelayUntil(&last, frequency);
         xSemaphoreTake(mutex, portMAX_DELAY);
         pod_flush();
         xSemaphoreGive(mutex);
@@ -81,7 +88,7 @@ void fps_task(void *params)
         // pod_put_text(message, 8, 4, color, font8x8);
         // sprintf(message, "FB %.*f FPS  ", 1, fb_fps);
         pod_put_text(message, 224, 4, color, font8x8);
-        ESP_LOGI(TAG, "FX %.*f FPS / FB %.*f FPS", 1, fx_fps, 1, fb_fps);
+        ESP_LOGI(TAG, "%.*f %s per second, FB %.*f FPS", 1, fx_fps, primitive, 1, fb_fps);
 
         vTaskDelay(1000 / portTICK_RATE_MS);
     }
@@ -103,7 +110,7 @@ void switch_task(void *params)
         demo = (demo + 1) % 12;
         fx_fps = fps2(true);
         pod_fill_rectangle(0, 0, DISPLAY_WIDTH - 1, DISPLAY_HEIGHT -1, RGB565(0, 0, 0));
-        vTaskDelay(3000 / portTICK_RATE_MS);
+        vTaskDelay(5000 / portTICK_RATE_MS);
     }
 
     vTaskDelete(NULL);
@@ -111,6 +118,8 @@ void switch_task(void *params)
 
 void polygon_demo()
 {
+    strcpy(primitive, "polygons");
+
     int16_t x0 = (rand() % DISPLAY_WIDTH + 20) - 20;
     int16_t y0 = (rand() % DISPLAY_HEIGHT + 20) - 20;
     int16_t x1 = (rand() % DISPLAY_WIDTH + 20) - 20;
@@ -128,6 +137,8 @@ void polygon_demo()
 
 void fill_polygon_demo()
 {
+    strcpy(primitive, "filled polygons");
+
     int16_t x0 = (rand() % DISPLAY_WIDTH + 20) - 20;
     int16_t y0 = (rand() % DISPLAY_HEIGHT + 20) - 20;
     int16_t x1 = (rand() % DISPLAY_WIDTH + 20) - 20;
@@ -145,6 +156,8 @@ void fill_polygon_demo()
 
 void circle_demo()
 {
+    strcpy(primitive, "circles");
+
     int16_t x0 = (rand() % DISPLAY_WIDTH + 20) - 20;
     int16_t y0 = (rand() % DISPLAY_HEIGHT + 20) - 20;
     uint16_t r = (rand() % 40);
@@ -154,6 +167,8 @@ void circle_demo()
 
 void fill_circle_demo()
 {
+    strcpy(primitive, "filled circles");
+
     int16_t x0 = (rand() % DISPLAY_WIDTH + 20) - 20;
     int16_t y0 = (rand() % DISPLAY_HEIGHT + 20) - 20;
     uint16_t r = (rand() % 40);
@@ -163,6 +178,8 @@ void fill_circle_demo()
 
 void line_demo()
 {
+    strcpy(primitive, "lines");
+
     int16_t x0 = (rand() % DISPLAY_WIDTH + 20) - 20;
     int16_t y0 = (rand() % DISPLAY_HEIGHT + 20) - 20;
     int16_t x1 = (rand() % DISPLAY_WIDTH + 20) - 20;
@@ -173,6 +190,8 @@ void line_demo()
 
 void rectangle_demo()
 {
+    strcpy(primitive, "rectangles");
+
     int16_t x0 = (rand() % DISPLAY_WIDTH + 20) - 20;
     int16_t y0 = (rand() % DISPLAY_HEIGHT + 20) - 20;
     int16_t x1 = (rand() % DISPLAY_WIDTH + 20) - 20;
@@ -183,6 +202,8 @@ void rectangle_demo()
 
 void fill_rectangle_demo()
 {
+    strcpy(primitive, "filled rectangles");
+
     int16_t x0 = (rand() % DISPLAY_WIDTH + 20) - 20;
     int16_t y0 = (rand() % DISPLAY_HEIGHT + 20) - 20;
     int16_t x1 = (rand() % DISPLAY_WIDTH + 20) - 20;
@@ -193,6 +214,8 @@ void fill_rectangle_demo()
 
 void put_character_demo()
 {
+    strcpy(primitive, "characters");
+
     int16_t x0 = (rand() % DISPLAY_WIDTH + 20) - 20;
     int16_t y0 = (rand() % DISPLAY_HEIGHT + 20) - 20;
 
@@ -203,6 +226,8 @@ void put_character_demo()
 
 void put_text_demo()
 {
+    strcpy(primitive, "strings");
+
     int16_t x0 = (rand() % DISPLAY_WIDTH + 20) - 20;
     int16_t y0 = (rand() % DISPLAY_HEIGHT + 20) - 20;
 
@@ -212,6 +237,8 @@ void put_text_demo()
 
 void put_pixel_demo()
 {
+    strcpy(primitive, "pixels");
+
     int16_t x0 = (rand() % DISPLAY_WIDTH + 20) - 20;
     int16_t y0 = (rand() % DISPLAY_HEIGHT + 20) - 20;
 
@@ -221,6 +248,8 @@ void put_pixel_demo()
 
 void triangle_demo()
 {
+    strcpy(primitive, "triangles");
+
     int16_t x0 = (rand() % DISPLAY_WIDTH + 20) - 20;
     int16_t y0 = (rand() % DISPLAY_HEIGHT + 20) - 20;
     int16_t x1 = (rand() % DISPLAY_WIDTH + 20) - 20;
@@ -233,6 +262,8 @@ void triangle_demo()
 
 void fill_triangle_demo()
 {
+    strcpy(primitive, "filled triangles");
+
     int16_t x0 = (rand() % DISPLAY_WIDTH + 20) - 20;
     int16_t y0 = (rand() % DISPLAY_HEIGHT + 20) - 20;
     int16_t x1 = (rand() % DISPLAY_WIDTH + 20) - 20;
@@ -245,6 +276,8 @@ void fill_triangle_demo()
 
 void rgb_demo()
 {
+    strcpy(primitive, "rgb bars");
+
     uint16_t red = RGB565(255, 0, 0);
     uint16_t green = RGB565(0, 255, 0);
     uint16_t blue = RGB565(0, 0, 255);
@@ -256,7 +289,6 @@ void rgb_demo()
 void demo_task(void *params)
 {
     while (1) {
-        //xSemaphoreTake(mutex, portMAX_DELAY);
         if (0 == demo) {
             rgb_demo();
         } else if (1 == demo) {
@@ -287,8 +319,6 @@ void demo_task(void *params)
 
         /* Update the FX fps counter. */
         fx_fps = fps2(false);
-
-        vTaskDelay(10 / portTICK_RATE_MS);
     }
 
 
