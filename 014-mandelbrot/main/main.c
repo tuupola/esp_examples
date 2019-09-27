@@ -43,17 +43,17 @@ void mandelbrot_task(void *params)
     uint16_t px;
     uint16_t py;
 
-    double x;
-    double y;
-    double x0;
-    double y0;
-    double xtemp;
-    double ytemp;
+    float x;
+    float y;
+    float x0;
+    float y0;
+    float xtemp;
+    float ytemp;
 
-    double zoom = 0.0;
+    float zoom = 0.0;
 
     clock_t start;
-    double time_spent;
+    float time_spent;
 
     while (1) {
         start = clock();
