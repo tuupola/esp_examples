@@ -41,8 +41,8 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <bitmap.h>
 #include <esp_log.h>
 
-#include "color.h"
-#include "byteswap.h"
+#include "hsl.h"
+#include "rgb565.h"
 #include "bitmap.h"
 #include "fire.h"
 
@@ -66,9 +66,9 @@ void fire_init()
 
         rgb = hsl_to_rgb888(&hsl);
 
-        color = RGB565(rgb.r, rgb.g, rgb.b);
-        //g_palette[x] = color;
-        g_palette[x] = BSWAP_16(color);
+        color = rgb565(rgb.r, rgb.g, rgb.b);
+        g_palette[x] = color;
+        //g_palette[x] = BSWAP_16(color);
     }
 
     fire_clear();

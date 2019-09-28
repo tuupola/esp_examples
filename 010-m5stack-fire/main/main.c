@@ -37,6 +37,7 @@ SOFTWARE.
 #include "ili9341.h"
 #include "copepod.h"
 #include "font8x8.h"
+#include "rgb565.h"
 #include "fire.h"
 #include "fps.h"
 #include "fps2.h"
@@ -79,7 +80,7 @@ void fps_task(void *params)
     char message[42];
 
     while (1) {
-        color = RGB565(0, 0, 255);
+        color = rgb565(0, 255, 0);
         sprintf(message, " FX %.*f FPS                FB %.*f FPS", 1, fx_fps, 1, fb_fps);
         pod_put_text(message, 0, 4, color, font8x8);
 
