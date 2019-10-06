@@ -34,7 +34,7 @@ SOFTWARE.
 #include <esp_task_wdt.h>
 
 #include "bitmap.h"
-#include "ili9341.h"
+#include "rgb565.h"
 #include "copepod.h"
 #include "copepod-hal.h"
 #include "font8x8.h"
@@ -77,7 +77,7 @@ void framebuffer_task(void *params)
  */
 void fps_task(void *params)
 {
-    uint16_t color = RGB565(0, 0, 255);
+    uint16_t color = rgb565(0, 0, 255);
     char message[42];
 
 #ifdef CONFIG_POD_HAL_USE_FRAMEBUFFER
@@ -107,8 +107,8 @@ void switch_task(void *params)
     while (1) {
         demo = (demo + 1) % 12;
         fx_fps = fps2(true);
-        pod_fill_rectangle(0, 0, DISPLAY_WIDTH - 1, DISPLAY_HEIGHT -1, RGB565(0, 0, 0));
-        vTaskDelay(5000 / portTICK_RATE_MS);
+        pod_fill_rectangle(0, 0, DISPLAY_WIDTH - 1, DISPLAY_HEIGHT -1, rgb565(0, 0, 0));
+        vTaskDelay(6000 / portTICK_RATE_MS);
     }
 
     vTaskDelete(NULL);
@@ -276,9 +276,12 @@ void rgb_demo()
 {
     strcpy(primitive, "rgb bars");
 
-    uint16_t red = RGB565(255, 0, 0);
-    uint16_t green = RGB565(0, 255, 0);
-    uint16_t blue = RGB565(0, 0, 255);
+    uint16_t red = rgb565(255, 0, 0);
+    uint16_t green = rgb565(0, 255, 0);
+    uint16_t blue = rgb565(0, 0, 255);
+    //ESP_LOGD(TAG, "before  - red: 0x%04x, green: 0x%04x, blue: 0x%04x", red, green, blue);
+
+    //pod_clear_screen();
     pod_fill_rectangle(0, 0, DISPLAY_WIDTH / 3, DISPLAY_HEIGHT, red);
     pod_fill_rectangle(DISPLAY_WIDTH / 3, 0, DISPLAY_WIDTH / 3 * 2, DISPLAY_HEIGHT, green);
     pod_fill_rectangle(DISPLAY_WIDTH / 3 * 2, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT, blue);
@@ -287,6 +290,7 @@ void rgb_demo()
 void demo_task(void *params)
 {
     while (1) {
+        demo = 0;
         if (0 == demo) {
             rgb_demo();
         } else if (1 == demo) {
