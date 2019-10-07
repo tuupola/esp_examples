@@ -36,7 +36,7 @@ SOFTWARE.
 #include "bitmap.h"
 #include "rgb565.h"
 #include "copepod.h"
-#include "copepod-hal.h"
+#include "copepod_hal.h"
 #include "font8x8.h"
 #include "fps.h"
 #include "fps2.h"
@@ -77,15 +77,15 @@ void framebuffer_task(void *params)
  */
 void fps_task(void *params)
 {
-    uint16_t color = rgb565(0, 0, 255);
+    uint16_t color = rgb565(0, 255, 0);
     char message[42];
 
 #ifdef CONFIG_POD_HAL_USE_FRAMEBUFFER
     while (1) {
-        // sprintf(message, "FX %.*f FPS          ", 1, fx_fps);
-        // pod_put_text(message, 8, 4, color, font8x8);
-        // sprintf(message, "FB %.*f FPS  ", 1, fb_fps);
-        pod_put_text(message, 224, 4, color, font8x8);
+        sprintf(message, "%.*f FXPS          ", 1, fx_fps);
+        pod_put_text(message, 8, 4, color, font8x8);
+        sprintf(message, "%.*f FPS  ", 1, fb_fps);
+        pod_put_text(message, 240, 4, color, font8x8);
         ESP_LOGI(TAG, "%.*f %s per second, FB %.*f FPS", 1, fx_fps, primitive, 1, fb_fps);
 
         vTaskDelay(1000 / portTICK_RATE_MS);
@@ -107,7 +107,7 @@ void switch_task(void *params)
     while (1) {
         demo = (demo + 1) % 12;
         fx_fps = fps2(true);
-        pod_fill_rectangle(0, 0, DISPLAY_WIDTH - 1, DISPLAY_HEIGHT -1, rgb565(0, 0, 0));
+        pod_clear_screen();
         vTaskDelay(6000 / portTICK_RATE_MS);
     }
 
@@ -290,7 +290,6 @@ void rgb_demo()
 void demo_task(void *params)
 {
     while (1) {
-        demo = 0;
         if (0 == demo) {
             rgb_demo();
         } else if (1 == demo) {
