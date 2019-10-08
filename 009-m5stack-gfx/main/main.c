@@ -78,15 +78,18 @@ void framebuffer_task(void *params)
 void fps_task(void *params)
 {
     uint16_t color = rgb565(0, 255, 0);
-    char message[42];
+    char message[128];
 
 #ifdef CONFIG_POD_HAL_USE_FRAMEBUFFER
     while (1) {
-        sprintf(message, "%.*f FXPS          ", 1, fx_fps);
+        pod_set_clip_window(0, 0, DISPLAY_WIDTH - 1, 20);
+
+        sprintf(message, "%.*f %s/S          ", 0, fx_fps, primitive);
         pod_put_text(message, 8, 4, color, font8x8);
         sprintf(message, "%.*f FPS  ", 1, fb_fps);
         pod_put_text(message, 240, 4, color, font8x8);
-        ESP_LOGI(TAG, "%.*f %s per second, FB %.*f FPS", 1, fx_fps, primitive, 1, fb_fps);
+
+        pod_set_clip_window(0, 20, DISPLAY_WIDTH - 1, DISPLAY_HEIGHT - 1);
 
         vTaskDelay(1000 / portTICK_RATE_MS);
     }
@@ -105,6 +108,7 @@ void fps_task(void *params)
 void switch_task(void *params)
 {
     while (1) {
+        ESP_LOGI(TAG, "%.*f %s per second, FB %.*f FPS", 1, fx_fps, primitive, 1, fb_fps);
         demo = (demo + 1) % 12;
         fx_fps = fps2(true);
         pod_clear_screen();
@@ -116,7 +120,7 @@ void switch_task(void *params)
 
 void polygon_demo()
 {
-    strcpy(primitive, "polygons");
+    strcpy(primitive, "POLYGONS");
 
     int16_t x0 = (rand() % DISPLAY_WIDTH + 20) - 20;
     int16_t y0 = (rand() % DISPLAY_HEIGHT + 20) - 20;
@@ -135,7 +139,7 @@ void polygon_demo()
 
 void fill_polygon_demo()
 {
-    strcpy(primitive, "filled polygons");
+    strcpy(primitive, "FILLED POLYGONS");
 
     int16_t x0 = (rand() % DISPLAY_WIDTH + 20) - 20;
     int16_t y0 = (rand() % DISPLAY_HEIGHT + 20) - 20;
@@ -154,7 +158,7 @@ void fill_polygon_demo()
 
 void circle_demo()
 {
-    strcpy(primitive, "circles");
+    strcpy(primitive, "CIRCLES");
 
     int16_t x0 = (rand() % DISPLAY_WIDTH + 20) - 20;
     int16_t y0 = (rand() % DISPLAY_HEIGHT + 20) - 20;
@@ -165,7 +169,7 @@ void circle_demo()
 
 void fill_circle_demo()
 {
-    strcpy(primitive, "filled circles");
+    strcpy(primitive, "FILLED CIRCLES");
 
     int16_t x0 = (rand() % DISPLAY_WIDTH + 20) - 20;
     int16_t y0 = (rand() % DISPLAY_HEIGHT + 20) - 20;
@@ -176,7 +180,7 @@ void fill_circle_demo()
 
 void line_demo()
 {
-    strcpy(primitive, "lines");
+    strcpy(primitive, "LINES");
 
     int16_t x0 = (rand() % DISPLAY_WIDTH + 20) - 20;
     int16_t y0 = (rand() % DISPLAY_HEIGHT + 20) - 20;
@@ -188,7 +192,7 @@ void line_demo()
 
 void rectangle_demo()
 {
-    strcpy(primitive, "rectangles");
+    strcpy(primitive, "RECTANGLES");
 
     int16_t x0 = (rand() % DISPLAY_WIDTH + 20) - 20;
     int16_t y0 = (rand() % DISPLAY_HEIGHT + 20) - 20;
@@ -200,7 +204,7 @@ void rectangle_demo()
 
 void fill_rectangle_demo()
 {
-    strcpy(primitive, "filled rectangles");
+    strcpy(primitive, "FILLED RECTANGLES");
 
     int16_t x0 = (rand() % DISPLAY_WIDTH + 20) - 20;
     int16_t y0 = (rand() % DISPLAY_HEIGHT + 20) - 20;
@@ -212,7 +216,7 @@ void fill_rectangle_demo()
 
 void put_character_demo()
 {
-    strcpy(primitive, "characters");
+    strcpy(primitive, "CHARACTERS");
 
     int16_t x0 = (rand() % DISPLAY_WIDTH + 20) - 20;
     int16_t y0 = (rand() % DISPLAY_HEIGHT + 20) - 20;
@@ -224,7 +228,7 @@ void put_character_demo()
 
 void put_text_demo()
 {
-    strcpy(primitive, "strings");
+    strcpy(primitive, "STRINGS");
 
     int16_t x0 = (rand() % DISPLAY_WIDTH + 20) - 20;
     int16_t y0 = (rand() % DISPLAY_HEIGHT + 20) - 20;
@@ -235,7 +239,7 @@ void put_text_demo()
 
 void put_pixel_demo()
 {
-    strcpy(primitive, "pixels");
+    strcpy(primitive, "PIXELS");
 
     int16_t x0 = (rand() % DISPLAY_WIDTH + 20) - 20;
     int16_t y0 = (rand() % DISPLAY_HEIGHT + 20) - 20;
@@ -246,7 +250,7 @@ void put_pixel_demo()
 
 void triangle_demo()
 {
-    strcpy(primitive, "triangles");
+    strcpy(primitive, "TRIANGLES");
 
     int16_t x0 = (rand() % DISPLAY_WIDTH + 20) - 20;
     int16_t y0 = (rand() % DISPLAY_HEIGHT + 20) - 20;
@@ -260,7 +264,7 @@ void triangle_demo()
 
 void fill_triangle_demo()
 {
-    strcpy(primitive, "filled triangles");
+    strcpy(primitive, "FILLED RECTANGLES");
 
     int16_t x0 = (rand() % DISPLAY_WIDTH + 20) - 20;
     int16_t y0 = (rand() % DISPLAY_HEIGHT + 20) - 20;
@@ -274,7 +278,7 @@ void fill_triangle_demo()
 
 void rgb_demo()
 {
-    strcpy(primitive, "rgb bars");
+    strcpy(primitive, "RGB BARS");
 
     uint16_t red = rgb565(255, 0, 0);
     uint16_t green = rgb565(0, 255, 0);
