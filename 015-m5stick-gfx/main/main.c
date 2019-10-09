@@ -41,7 +41,7 @@ SOFTWARE.
 #include "font8x8.h"
 #include "fps.h"
 #include "fps2.h"
-#include "esp-i2c-hal.h"
+#include "esp_i2c_hal.h"
 #include "sdkconfig.h"
 
 static const char *TAG = "main";
@@ -97,13 +97,13 @@ void fps_task(void *params)
     }
 #else
     while (1) {
-        sprintf(message, "%.*f %s PER SECOND       ", 0, fx_fps, primitive);
+        sprintf(message, "%.*f     ", 0, fx_fps);
         pod_set_clip_window(0, 0, DISPLAY_WIDTH - 1, DISPLAY_HEIGHT - 1);
         pod_put_text(message, 8, 4, color, font8x8);
-        pod_set_clip_window(0, 20, DISPLAY_WIDTH - 1, DISPLAY_HEIGHT - 21);
+        pod_set_clip_window(0, 20, DISPLAY_WIDTH - 1, DISPLAY_HEIGHT - 1);
 
 
-        vTaskDelay(5900 / portTICK_RATE_MS);
+        vTaskDelay(1900 / portTICK_RATE_MS);
     }
 #endif
     vTaskDelete(NULL);
@@ -270,7 +270,7 @@ void triangle_demo()
 
 void fill_triangle_demo()
 {
-    strcpy(primitive, "FILLED RECTANGLES");
+    strcpy(primitive, "FILLED TRIANGLES");
 
     int16_t x0 = (rand() % DISPLAY_WIDTH + 20) - 20;
     int16_t y0 = (rand() % DISPLAY_HEIGHT + 20) - 20;
