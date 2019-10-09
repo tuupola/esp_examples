@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2018 Mika Tuupola
+Copyright (c) 2018 - 2019 Mika Tuupola
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -35,13 +35,13 @@ SOFTWARE.
 
 #include "axp192.h"
 #include "bitmap.h"
-#include "st7735s.h"
+#include "rgb565.h"
 #include "copepod.h"
-#include "copepod-hal.h"
-#include "esp-i2c-hal.h"
+#include "copepod_hal.h"
 #include "font8x8.h"
 #include "fps.h"
 #include "fps2.h"
+#include "esp-i2c-hal.h"
 #include "sdkconfig.h"
 
 static const char *TAG = "main";
@@ -53,22 +53,22 @@ static float fx_fps;
 static uint16_t demo = 0;
 
 /*
- * Flushes the framebuffer to display in a loop. M5Stick can currently
- * do about 85 fps. This demo has has fps capped to 30 fps.
+ * Flushes the framebuffer to display in a loop. This demo is
+ * capped to 60 fps.
  */
 void framebuffer_task(void *params)
 {
     TickType_t last;
-    const TickType_t frequency = 1000 / 30 / portTICK_RATE_MS;
+    const TickType_t frequency = 1000 / 100 / portTICK_RATE_MS;
 
     last = xTaskGetTickCount();
 
     while (1) {
-        vTaskDelayUntil(&last, frequency);
         xSemaphoreTake(mutex, portMAX_DELAY);
         pod_flush();
         xSemaphoreGive(mutex);
         fb_fps = fps();
+        vTaskDelayUntil(&last, frequency);
     }
 
     vTaskDelete(NULL);
@@ -79,26 +79,31 @@ void framebuffer_task(void *params)
  */
 void fps_task(void *params)
 {
-    uint16_t color = RGB565(0, 0, 255);
-    char message[42];
+    uint16_t color = rgb565(0, 255, 0);
+    char message[128];
 
 #ifdef CONFIG_POD_HAL_USE_FRAMEBUFFER
     while (1) {
-        // sprintf(message, "FX %.*f FPS          ", 1, fx_fps);
-        // pod_put_text(message, 8, 4, color, font8x8);
-        // sprintf(message, "FB %.*f FPS  ", 1, fb_fps);
-        pod_put_text(message, 224, 4, color, font8x8);
-        ESP_LOGI(TAG, "%.*f %s per second, FB %.*f FPS", 1, fx_fps, primitive, 1, fb_fps);
+        pod_set_clip_window(0, 0, DISPLAY_WIDTH - 1, DISPLAY_HEIGHT - 1);
+
+        sprintf(message, "%.*f      ", 0, fx_fps);
+        pod_put_text(message, 6, 6, color, font8x8);
+        sprintf(message, "%.*f  ", 1, fb_fps);
+        pod_put_text(message, DISPLAY_WIDTH - 38, DISPLAY_HEIGHT - 14, color, font8x8);
+
+        pod_set_clip_window(0, 20, DISPLAY_WIDTH - 1, DISPLAY_HEIGHT - 21);
 
         vTaskDelay(1000 / portTICK_RATE_MS);
     }
 #else
     while (1) {
-        // sprintf(message, "FX %.*f FPS          ", 1, fx_fps);
-        // pod_put_text(message, 0, 4, color, font8x8);
-        ESP_LOGI(TAG, "FX %.*f FPS", 1, fx_fps);
+        sprintf(message, "%.*f %s PER SECOND       ", 0, fx_fps, primitive);
+        pod_set_clip_window(0, 0, DISPLAY_WIDTH - 1, DISPLAY_HEIGHT - 1);
+        pod_put_text(message, 8, 4, color, font8x8);
+        pod_set_clip_window(0, 20, DISPLAY_WIDTH - 1, DISPLAY_HEIGHT - 21);
 
-        vTaskDelay(1000 / portTICK_RATE_MS);
+
+        vTaskDelay(5900 / portTICK_RATE_MS);
     }
 #endif
     vTaskDelete(NULL);
@@ -107,10 +112,13 @@ void fps_task(void *params)
 void switch_task(void *params)
 {
     while (1) {
-        demo = (demo + 1) % 12;
+        ESP_LOGI(TAG, "%.*f %s per second, FB %.*f FPS", 1, fx_fps, primitive, 1, fb_fps);
+
+        demo = (demo + 1) % 13;
+        pod_clear_screen();
         fx_fps = fps2(true);
-        pod_fill_rectangle(0, 0, DISPLAY_WIDTH - 1, DISPLAY_HEIGHT -1, RGB565(0, 0, 0));
-        vTaskDelay(5000 / portTICK_RATE_MS);
+
+        vTaskDelay(6000 / portTICK_RATE_MS);
     }
 
     vTaskDelete(NULL);
@@ -118,7 +126,7 @@ void switch_task(void *params)
 
 void polygon_demo()
 {
-    strcpy(primitive, "polygons");
+    strcpy(primitive, "POLYGONS");
 
     int16_t x0 = (rand() % DISPLAY_WIDTH + 20) - 20;
     int16_t y0 = (rand() % DISPLAY_HEIGHT + 20) - 20;
@@ -137,7 +145,7 @@ void polygon_demo()
 
 void fill_polygon_demo()
 {
-    strcpy(primitive, "filled polygons");
+    strcpy(primitive, "FILLED POLYGONS");
 
     int16_t x0 = (rand() % DISPLAY_WIDTH + 20) - 20;
     int16_t y0 = (rand() % DISPLAY_HEIGHT + 20) - 20;
@@ -156,7 +164,7 @@ void fill_polygon_demo()
 
 void circle_demo()
 {
-    strcpy(primitive, "circles");
+    strcpy(primitive, "CIRCLES");
 
     int16_t x0 = (rand() % DISPLAY_WIDTH + 20) - 20;
     int16_t y0 = (rand() % DISPLAY_HEIGHT + 20) - 20;
@@ -167,7 +175,7 @@ void circle_demo()
 
 void fill_circle_demo()
 {
-    strcpy(primitive, "filled circles");
+    strcpy(primitive, "FILLED CIRCLES");
 
     int16_t x0 = (rand() % DISPLAY_WIDTH + 20) - 20;
     int16_t y0 = (rand() % DISPLAY_HEIGHT + 20) - 20;
@@ -178,7 +186,7 @@ void fill_circle_demo()
 
 void line_demo()
 {
-    strcpy(primitive, "lines");
+    strcpy(primitive, "LINES");
 
     int16_t x0 = (rand() % DISPLAY_WIDTH + 20) - 20;
     int16_t y0 = (rand() % DISPLAY_HEIGHT + 20) - 20;
@@ -190,7 +198,7 @@ void line_demo()
 
 void rectangle_demo()
 {
-    strcpy(primitive, "rectangles");
+    strcpy(primitive, "RECTANGLES");
 
     int16_t x0 = (rand() % DISPLAY_WIDTH + 20) - 20;
     int16_t y0 = (rand() % DISPLAY_HEIGHT + 20) - 20;
@@ -202,7 +210,7 @@ void rectangle_demo()
 
 void fill_rectangle_demo()
 {
-    strcpy(primitive, "filled rectangles");
+    strcpy(primitive, "FILLED RECTANGLES");
 
     int16_t x0 = (rand() % DISPLAY_WIDTH + 20) - 20;
     int16_t y0 = (rand() % DISPLAY_HEIGHT + 20) - 20;
@@ -214,7 +222,7 @@ void fill_rectangle_demo()
 
 void put_character_demo()
 {
-    strcpy(primitive, "characters");
+    strcpy(primitive, "CHARACTERS");
 
     int16_t x0 = (rand() % DISPLAY_WIDTH + 20) - 20;
     int16_t y0 = (rand() % DISPLAY_HEIGHT + 20) - 20;
@@ -226,9 +234,9 @@ void put_character_demo()
 
 void put_text_demo()
 {
-    strcpy(primitive, "strings");
+    strcpy(primitive, "STRINGS");
 
-    int16_t x0 = (rand() % DISPLAY_WIDTH + 20) - 20;
+    int16_t x0 = (rand() % DISPLAY_WIDTH + 20) - 100;
     int16_t y0 = (rand() % DISPLAY_HEIGHT + 20) - 20;
 
     uint16_t colour = rand() % 0xffff;
@@ -237,7 +245,7 @@ void put_text_demo()
 
 void put_pixel_demo()
 {
-    strcpy(primitive, "pixels");
+    strcpy(primitive, "PIXELS");
 
     int16_t x0 = (rand() % DISPLAY_WIDTH + 20) - 20;
     int16_t y0 = (rand() % DISPLAY_HEIGHT + 20) - 20;
@@ -248,7 +256,7 @@ void put_pixel_demo()
 
 void triangle_demo()
 {
-    strcpy(primitive, "triangles");
+    strcpy(primitive, "TRIANGLES");
 
     int16_t x0 = (rand() % DISPLAY_WIDTH + 20) - 20;
     int16_t y0 = (rand() % DISPLAY_HEIGHT + 20) - 20;
@@ -262,7 +270,7 @@ void triangle_demo()
 
 void fill_triangle_demo()
 {
-    strcpy(primitive, "filled triangles");
+    strcpy(primitive, "FILLED RECTANGLES");
 
     int16_t x0 = (rand() % DISPLAY_WIDTH + 20) - 20;
     int16_t y0 = (rand() % DISPLAY_HEIGHT + 20) - 20;
@@ -276,14 +284,19 @@ void fill_triangle_demo()
 
 void rgb_demo()
 {
-    strcpy(primitive, "rgb bars");
+    strcpy(primitive, "RGB BARS");
 
-    uint16_t red = RGB565(255, 0, 0);
-    uint16_t green = RGB565(0, 255, 0);
-    uint16_t blue = RGB565(0, 0, 255);
-    pod_fill_rectangle(0, 0, DISPLAY_WIDTH / 3, DISPLAY_HEIGHT, red);
-    pod_fill_rectangle(DISPLAY_WIDTH / 3, 0, DISPLAY_WIDTH / 3 * 2, DISPLAY_HEIGHT, green);
-    pod_fill_rectangle(DISPLAY_WIDTH / 3 * 2, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT, blue);
+    uint16_t red = rgb565(255, 0, 0);
+    uint16_t green = rgb565(0, 255, 0);
+    uint16_t blue = rgb565(0, 0, 255);
+
+    int16_t x0 = 0;
+    int16_t x1 = DISPLAY_WIDTH / 3;
+    int16_t x2 = 2 * x1;
+
+    pod_fill_rectangle(x0, 0, x1 - 1, DISPLAY_HEIGHT, red);
+    pod_fill_rectangle(x1 + 1, 0, x2 - 1, DISPLAY_HEIGHT, green);
+    pod_fill_rectangle(x2 + 1, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT, blue);
 }
 
 void demo_task(void *params)
@@ -317,7 +330,7 @@ void demo_task(void *params)
             put_text_demo();
         }
 
-        /* Update the FX fps counter. */
+        /* Update the primitive fps counter. */
         fx_fps = fps2(false);
     }
 
@@ -333,7 +346,7 @@ void app_main()
     i2c_hal_master_init();
     axp192_init();
     pod_init();
-    //pod_set_clip_window(0, 20, DISPLAY_WIDTH - 1, DISPLAY_HEIGHT - 1);
+    pod_set_clip_window(0, 20, DISPLAY_WIDTH - 1, DISPLAY_HEIGHT - 21);
 
     ESP_LOGI(TAG, "Heap after pod init: %d", esp_get_free_heap_size());
 
@@ -345,7 +358,7 @@ void app_main()
 #endif
         xTaskCreatePinnedToCore(fps_task, "FPS", 8092, NULL, 2, NULL, 1);
         xTaskCreatePinnedToCore(demo_task, "Demo", 4096, NULL, 1, NULL, 1);
-        xTaskCreatePinnedToCore(switch_task, "Switch", 2048, NULL, 2, NULL, 0);
+        xTaskCreatePinnedToCore(switch_task, "Switch", 2048, NULL, 2, NULL, 1);
     } else {
         ESP_LOGE(TAG, "No mutex?");
     }
