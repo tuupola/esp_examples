@@ -82,7 +82,7 @@ void fps_task(void *params)
 
 #ifdef CONFIG_POD_HAL_USE_FRAMEBUFFER
     while (1) {
-        pod_set_clip_window(0, 0, DISPLAY_WIDTH - 1, 20);
+        pod_set_clip_window(0, 0, DISPLAY_WIDTH - 1, DISPLAY_HEIGHT - 1);
 
         sprintf(message, "%.*f %s/S          ", 0, fx_fps, primitive);
         pod_put_text(message, 8, 4, color, font8x8);
@@ -95,14 +95,13 @@ void fps_task(void *params)
     }
 #else
     while (1) {
-        pod_set_clip_window(0, 0, DISPLAY_WIDTH - 1, 20);
-
-        sprintf(message, "%.*f %s/S          ", 0, fx_fps, primitive);
+        sprintf(message, "%.*f %s PER SECOND       ", 0, fx_fps, primitive);
+        pod_set_clip_window(0, 0, DISPLAY_WIDTH - 1, DISPLAY_HEIGHT - 1);
         pod_put_text(message, 8, 4, color, font8x8);
-
         pod_set_clip_window(0, 20, DISPLAY_WIDTH - 1, DISPLAY_HEIGHT - 1);
 
-        vTaskDelay(1000 / portTICK_RATE_MS);
+
+        vTaskDelay(2000 / portTICK_RATE_MS);
     }
 #endif
     vTaskDelete(NULL);
@@ -113,9 +112,8 @@ void switch_task(void *params)
     while (1) {
         ESP_LOGI(TAG, "%.*f %s per second, FB %.*f FPS", 1, fx_fps, primitive, 1, fb_fps);
 
-        pod_clear_screen();
-
         demo = (demo + 1) % 13;
+        pod_clear_screen();
         fx_fps = fps2(true);
 
         vTaskDelay(6000 / portTICK_RATE_MS);
