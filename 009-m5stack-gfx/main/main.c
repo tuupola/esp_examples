@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2018 Mika Tuupola
+Copyright (c) 2018 - 2019 Mika Tuupola
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -51,22 +51,22 @@ static float fx_fps;
 static uint16_t demo = 0;
 
 /*
- * Flushes the framebuffer to display in a loop. M5Stick can currently
- * do about 85 fps. This demo has has fps capped to 30 fps.
+ * Flushes the framebuffer to display in a loop. This demo is
+ * capped to 30 fps.
  */
 void framebuffer_task(void *params)
 {
-    // TickType_t last;
-    // const TickType_t frequency = 1000 / 30 / portTICK_RATE_MS;
+    TickType_t last;
+    const TickType_t frequency = 1000 / 30 / portTICK_RATE_MS;
 
-    // last = xTaskGetTickCount();
+    last = xTaskGetTickCount();
 
     while (1) {
-        //vTaskDelayUntil(&last, frequency);
         xSemaphoreTake(mutex, portMAX_DELAY);
         pod_flush();
         xSemaphoreGive(mutex);
         fb_fps = fps();
+        vTaskDelayUntil(&last, frequency);
     }
 
     vTaskDelete(NULL);
@@ -95,9 +95,12 @@ void fps_task(void *params)
     }
 #else
     while (1) {
-        // sprintf(message, "FX %.*f FPS          ", 1, fx_fps);
-        // pod_put_text(message, 0, 4, color, font8x8);
-        ESP_LOGI(TAG, "FX %.*f FPS", 1, fx_fps);
+        pod_set_clip_window(0, 0, DISPLAY_WIDTH - 1, 20);
+
+        sprintf(message, "%.*f %s/S          ", 0, fx_fps, primitive);
+        pod_put_text(message, 8, 4, color, font8x8);
+
+        pod_set_clip_window(0, 20, DISPLAY_WIDTH - 1, DISPLAY_HEIGHT - 1);
 
         vTaskDelay(1000 / portTICK_RATE_MS);
     }
@@ -109,9 +112,12 @@ void switch_task(void *params)
 {
     while (1) {
         ESP_LOGI(TAG, "%.*f %s per second, FB %.*f FPS", 1, fx_fps, primitive, 1, fb_fps);
-        demo = (demo + 1) % 12;
-        fx_fps = fps2(true);
+
         pod_clear_screen();
+
+        demo = (demo + 1) % 13;
+        fx_fps = fps2(true);
+
         vTaskDelay(6000 / portTICK_RATE_MS);
     }
 
@@ -283,12 +289,14 @@ void rgb_demo()
     uint16_t red = rgb565(255, 0, 0);
     uint16_t green = rgb565(0, 255, 0);
     uint16_t blue = rgb565(0, 0, 255);
-    //ESP_LOGD(TAG, "before  - red: 0x%04x, green: 0x%04x, blue: 0x%04x", red, green, blue);
 
-    //pod_clear_screen();
-    pod_fill_rectangle(0, 0, DISPLAY_WIDTH / 3, DISPLAY_HEIGHT, red);
-    pod_fill_rectangle(DISPLAY_WIDTH / 3, 0, DISPLAY_WIDTH / 3 * 2, DISPLAY_HEIGHT, green);
-    pod_fill_rectangle(DISPLAY_WIDTH / 3 * 2, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT, blue);
+    int16_t x0 = 0;
+    int16_t x1 = DISPLAY_WIDTH / 3;
+    int16_t x2 = 2 * x1;
+
+    pod_fill_rectangle(x0, 0, x1 - 1, DISPLAY_HEIGHT, red);
+    pod_fill_rectangle(x1 + 1, 0, x2 - 1, DISPLAY_HEIGHT, green);
+    pod_fill_rectangle(x2 + 1, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT, blue);
 }
 
 void demo_task(void *params)
@@ -322,7 +330,7 @@ void demo_task(void *params)
             put_text_demo();
         }
 
-        /* Update the FX fps counter. */
+        /* Update the primitive fps counter. */
         fx_fps = fps2(false);
     }
 
@@ -348,7 +356,7 @@ void app_main()
 #endif
         xTaskCreatePinnedToCore(fps_task, "FPS", 8092, NULL, 2, NULL, 1);
         xTaskCreatePinnedToCore(demo_task, "Demo", 4096, NULL, 1, NULL, 1);
-        xTaskCreatePinnedToCore(switch_task, "Switch", 2048, NULL, 2, NULL, 0);
+        xTaskCreatePinnedToCore(switch_task, "Switch", 2048, NULL, 2, NULL, 1);
     } else {
         ESP_LOGE(TAG, "No mutex?");
     }
