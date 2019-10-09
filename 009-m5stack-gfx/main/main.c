@@ -84,12 +84,12 @@ void fps_task(void *params)
     while (1) {
         pod_set_clip_window(0, 0, DISPLAY_WIDTH - 1, DISPLAY_HEIGHT - 1);
 
-        sprintf(message, "%.*f %s/S          ", 0, fx_fps, primitive);
+        sprintf(message, "%.*f %s PER SECOND       ", 0, fx_fps, primitive);
         pod_put_text(message, 8, 4, color, font8x8);
         sprintf(message, "%.*f FPS  ", 1, fb_fps);
-        pod_put_text(message, 240, 4, color, font8x8);
+        pod_put_text(message, 244, 226, color, font8x8);
 
-        pod_set_clip_window(0, 20, DISPLAY_WIDTH - 1, DISPLAY_HEIGHT - 1);
+        pod_set_clip_window(0, 20, DISPLAY_WIDTH - 1, DISPLAY_HEIGHT - 21);
 
         vTaskDelay(1000 / portTICK_RATE_MS);
     }
@@ -98,7 +98,7 @@ void fps_task(void *params)
         sprintf(message, "%.*f %s PER SECOND       ", 0, fx_fps, primitive);
         pod_set_clip_window(0, 0, DISPLAY_WIDTH - 1, DISPLAY_HEIGHT - 1);
         pod_put_text(message, 8, 4, color, font8x8);
-        pod_set_clip_window(0, 20, DISPLAY_WIDTH - 1, DISPLAY_HEIGHT - 1);
+        pod_set_clip_window(0, 20, DISPLAY_WIDTH - 1, DISPLAY_HEIGHT - 21);
 
 
         vTaskDelay(2000 / portTICK_RATE_MS);
@@ -234,7 +234,7 @@ void put_text_demo()
 {
     strcpy(primitive, "STRINGS");
 
-    int16_t x0 = (rand() % DISPLAY_WIDTH + 20) - 20;
+    int16_t x0 = (rand() % DISPLAY_WIDTH + 20) - 100;
     int16_t y0 = (rand() % DISPLAY_HEIGHT + 20) - 20;
 
     uint16_t colour = rand() % 0xffff;
@@ -342,7 +342,7 @@ void app_main()
     ESP_LOGI(TAG, "Heap when starting: %d", esp_get_free_heap_size());
 
     pod_init();
-    pod_set_clip_window(0, 20, DISPLAY_WIDTH - 1, DISPLAY_HEIGHT - 1);
+    pod_set_clip_window(0, 20, DISPLAY_WIDTH - 1, DISPLAY_HEIGHT - 21);
 
     ESP_LOGI(TAG, "Heap after pod init: %d", esp_get_free_heap_size());
 
