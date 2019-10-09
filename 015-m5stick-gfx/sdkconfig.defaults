@@ -1,4 +1,8 @@
-# ESP MIPI driver config for M5Stick-C
+# This file contains working settings for M5Stick-C.
+# To use it copy itto your project root before running menuconfig.
+#
+# $ cp components/esp_mipi/m5stick-c.defaults sdkconfig.defaults
+# $ make menuconfig
 
 CONFIG_MIPI_DCS_ADDRESS_MODE_MIRROR_Y_SELECTED=y
 CONFIG_MIPI_DCS_ADDRESS_MODE_MIRROR_X_SELECTED=y
