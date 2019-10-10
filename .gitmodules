@@ -76,3 +76,6 @@
 [submodule "015-m5stick-gfx/components/esp_i2c_hal"]
 	path = 015-m5stick-gfx/components/esp_i2c_hal
 	url = git@github.com:tuupola/esp_i2c_hal.git
+[submodule "016-mipi-speedtest/components/esp_mipi"]
+	path = 016-mipi-speedtest/components/esp_mipi
+	url = git@github.com:tuupola/esp_mipi.git
