@@ -87,7 +87,7 @@ void fps_task(void *params)
         sprintf(message, "%.*f %s PER SECOND       ", 0, fx_fps, primitive);
         pod_put_text(message, 8, 4, color, font8x8);
         sprintf(message, "%.*f FPS  ", 1, fb_fps);
-        pod_put_text(message, 244, 226, color, font8x8);
+        pod_put_text(message, DISPLAY_WIDTH - 72, DISPLAY_HEIGHT - 14, color, font8x8);
 
         pod_set_clip_window(0, 20, DISPLAY_WIDTH - 1, DISPLAY_HEIGHT - 21);
 
