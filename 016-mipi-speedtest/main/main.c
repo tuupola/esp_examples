@@ -36,18 +36,6 @@ I (16237) main: 3018.8 16x16 blits per second
 I (21237) main: 941.9 32x32 blits per second
 I (26237) main: 244.3 64x64 blits per second
 
-
-I (956247) main: 11745.2 1x1 pixels per second
-I (961247) main: 8549.8 8x8 blits per second
-I (966247) main: 4669.0 16x16 blits per second
-I (971247) main: 1657.1 32x32 blits per second
-I (976247) main: 439.7 64x64 blits per second
-I (981247) main: 11745.2 1x1 pixels per second
-I (986247) main: 8549.8 8x8 blits per second
-I (991247) main: 4669.0 16x16 blits per second
-I (996247) main: 1657.1 32x32 blits per second
-I (1001247) main: 439.7 64x64 blits per second
-
 */
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
@@ -93,7 +81,7 @@ void pixel_test()
     int16_t x0 = esp_random() % DISPLAY_WIDTH;
     int16_t y0 = esp_random() % DISPLAY_HEIGHT;
 
-    mipi_display_put_pixel(spi, x0, y0, color);
+    mipi_display_write(spi, x0, y0, 1, 1, (uint8_t *) &color);
     speed = fps(false);
 }
 
@@ -109,7 +97,7 @@ void blit8_test()
         *(ptr++) = color;
     }
 
-    mipi_display_blit(spi, x0, y0, 8, 8, buffer);
+    mipi_display_write(spi, x0, y0, 8, 8, buffer);
     speed = fps(false);
 }
 
@@ -125,7 +113,7 @@ void blit16_test()
         *(ptr++) = color;
     }
 
-    mipi_display_blit(spi, x0, y0, 16, 16, buffer);
+    mipi_display_write(spi, x0, y0, 16, 16, buffer);
     speed = fps(false);
 }
 
@@ -141,7 +129,7 @@ void blit32_test()
         *(ptr++) = color;
     }
 
-    mipi_display_blit(spi, x0, y0, 32, 32, buffer);
+    mipi_display_write(spi, x0, y0, 32, 32, buffer);
     speed = fps(false);
 }
 
@@ -157,7 +145,7 @@ void blit64_test()
         *(ptr++) = color;
     }
 
-    mipi_display_blit(spi, x0, y0, 64, 64, buffer);
+    mipi_display_write(spi, x0, y0, 64, 64, buffer);
     speed = fps(false);
 }
 
@@ -190,7 +178,7 @@ void app_main()
         MALLOC_CAP_DMA | MALLOC_CAP_32BIT
     );
     memset(buffer, 0x00, buffer_size);
-    mipi_display_blit(spi, 0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT, buffer);
+    mipi_display_write(spi, 0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT, buffer);
 
     ESP_LOGI(TAG, "Heap after init: %d", esp_get_free_heap_size());
 
