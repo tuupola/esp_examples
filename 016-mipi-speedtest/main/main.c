@@ -18,6 +18,36 @@ I (16267) main: 3019.0 16x16 blits per second
 I (21267) main: 942.1 32x32 blits per second
 I (26267) main: 244.3 64x64 blits per second
 
+ST7789V
+CONFIG_SPI_CLOCK_SPEED_HZ=40000000
+
+I (6227) main: 11833.4 1x1 pixels per second
+I (11227) main: 8593.2 8x8 blits per second
+I (16227) main: 4680.2 16x16 blits per second
+I (21227) main: 1658.7 32x32 blits per second
+I (26227) main: 439.9 64x64 blits per second
+
+ST7789V
+CONFIG_SPI_CLOCK_SPEED_HZ=20000000
+
+I (6237) main: 11255.8 1x1 pixels per second
+I (11237) main: 6735.8 8x8 blits per second
+I (16237) main: 3018.8 16x16 blits per second
+I (21237) main: 941.9 32x32 blits per second
+I (26237) main: 244.3 64x64 blits per second
+
+
+I (956247) main: 11745.2 1x1 pixels per second
+I (961247) main: 8549.8 8x8 blits per second
+I (966247) main: 4669.0 16x16 blits per second
+I (971247) main: 1657.1 32x32 blits per second
+I (976247) main: 439.7 64x64 blits per second
+I (981247) main: 11745.2 1x1 pixels per second
+I (986247) main: 8549.8 8x8 blits per second
+I (991247) main: 4669.0 16x16 blits per second
+I (996247) main: 1657.1 32x32 blits per second
+I (1001247) main: 439.7 64x64 blits per second
+
 */
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
