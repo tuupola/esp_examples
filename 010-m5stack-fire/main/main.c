@@ -34,7 +34,7 @@ SOFTWARE.
 
 #include "bitmap.h"
 #include "byteswap.h"
-#include "ili9341.h"
+#include "copepod_hal.h"
 #include "copepod.h"
 #include "font8x8.h"
 #include "rgb565.h"

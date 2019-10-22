@@ -46,14 +46,28 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "bitmap.h"
 #include "fire.h"
 
-static uint16_t g_palette[256];
-static uint8_t g_fire[FIRE_HEIGHT][FIRE_WIDTH];
+//static uint16_t palette[256];
+//static uint8_t fire[FIRE_HEIGHT][FIRE_WIDTH];
+
+static uint16_t *palette;
+static uint8_t **fire;
 
 void fire_init()
 {
     uint16_t color;
     hsl_t hsl;
     rgb_t rgb;
+
+    palette = (uint16_t *) malloc(256 * sizeof(uint16_t));
+    // fire = heap_caps_malloc(FIRE_WIDTH * FIRE_HEIGHT, | MALLOC_CAP_SPIRAM);
+    // for (uint16_t i = 0; i < FIRE_HEIGHT; i++) {
+    //     fire[i] = (uint8_t *)malloc(FIRE_WIDTH * sizeof(uint8_t));
+    // }
+
+    fire = (uint8_t **)malloc(FIRE_HEIGHT * sizeof(uint8_t *));
+    for (uint16_t i = 0; i < FIRE_HEIGHT; i++) {
+         fire[i] = (uint8_t *)malloc(FIRE_WIDTH * sizeof(uint8_t));
+    }
 
     /* Generate palette. */
     for (uint16_t x = 0; x < 256; x++) {
@@ -67,8 +81,7 @@ void fire_init()
         rgb = hsl_to_rgb888(&hsl);
 
         color = rgb565(rgb.r, rgb.g, rgb.b);
-        g_palette[x] = color;
-        //g_palette[x] = BSWAP_16(color);
+        palette[x] = color;
     }
 
     fire_clear();
@@ -76,7 +89,13 @@ void fire_init()
 
 void fire_clear()
 {
-    memset(g_fire, 0x00, FIRE_HEIGHT * FIRE_WIDTH);
+    //memset(fire, 0x00, FIRE_HEIGHT * FIRE_WIDTH);
+    // for(uint16_t y = 0; y < FIRE_HEIGHT - 1; y++) {
+    //     for(uint16_t x = 0; x < FIRE_WIDTH - 1; x++) {
+    //         fire[y][x] = 0;
+    //     }
+    // }
+    //fire[0][0] = 0;
 }
 
 void fire_effect(bitmap_t *dst, uint16_t multiplier, uint16_t divider)
@@ -84,11 +103,11 @@ void fire_effect(bitmap_t *dst, uint16_t multiplier, uint16_t divider)
     /* The fire effect itself. */
     for(uint16_t y = 0; y < FIRE_HEIGHT - 1; y++) {
         for(uint16_t x = 0; x < FIRE_WIDTH; x++) {
-            g_fire[y][x] =
-                ((g_fire[(y + 1) % FIRE_HEIGHT][(x - 1 + FIRE_WIDTH) % FIRE_WIDTH]
-                + g_fire[(y + 1) % FIRE_HEIGHT][(x) % FIRE_WIDTH]
-                + g_fire[(y + 1) % FIRE_HEIGHT][(x + 1) % FIRE_WIDTH]
-                + g_fire[(y + 2) % FIRE_HEIGHT][(x) % FIRE_WIDTH])
+            fire[y][x] =
+                ((fire[(y + 1) % FIRE_HEIGHT][(x - 1 + FIRE_WIDTH) % FIRE_WIDTH]
+                + fire[(y + 1) % FIRE_HEIGHT][(x) % FIRE_WIDTH]
+                + fire[(y + 1) % FIRE_HEIGHT][(x + 1) % FIRE_WIDTH]
+                + fire[(y + 2) % FIRE_HEIGHT][(x) % FIRE_WIDTH])
                 * multiplier) / divider;
         }
     }
@@ -97,7 +116,7 @@ void fire_effect(bitmap_t *dst, uint16_t multiplier, uint16_t divider)
     for(uint16_t y = 0; y < FIRE_HEIGHT - 1; y++) {
         for(uint16_t x = 0; x < FIRE_WIDTH; x++) {
             uint16_t *fireptr = (uint16_t *) (dst->buffer + dst->pitch * y + (dst->depth / 8) * x);
-            *fireptr = g_palette[g_fire[y][x]];
+            *fireptr = palette[fire[y][x]];
         }
     }
 }
@@ -107,7 +126,7 @@ void fire_feed()
     /* Random bright line in the bottom. */
     for (uint16_t x = 0; x < FIRE_WIDTH; x++) {
         uint8_t color = abs(32768 + rand());
-        g_fire[FIRE_HEIGHT - 1][x] = color;
+        fire[FIRE_HEIGHT - 1][x] = color;
     }
 }
 
@@ -125,19 +144,14 @@ void fire_putchar(char ascii, int16_t x0, int16_t y0, const char font[][8])
     ascii = ascii + 1;
 
     uint8_t color = (rand() % 55) + 100;
-    uint8_t *ptr = g_fire[0];
-    ptr += (FIRE_WIDTH * y0) + x0;
 
     for (uint8_t x = 0; x < 8; x++) {
         for (uint8_t y = 0; y < 8; y++) {
-            ptr += 1;
-
-            bool set = font[(uint8_t)ascii][x] & 1 << y;
+            bool set = font[(uint8_t)ascii][y] & 1 << x;
             if (set) {
-                *(ptr) = color;
+                fire[y0 + y][x0 + x] = color;
             }
         }
-        ptr += FIRE_WIDTH - 8;
     }
 }
 
