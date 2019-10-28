@@ -121,7 +121,7 @@ void fire_task(void *params)
         if (0 == demo % 3) {
             fire_putstring(" IS IT 90'S AGAIN?      HELLO M5STACK!      THANKS LODE...", sx, FIRE_HEIGHT / 2, font8x8);
 
-            sx = sx - 1;
+            sx = sx - 2;
             if (sx < -440) {
                 sx = FIRE_WIDTH - 8;
             }
@@ -148,7 +148,7 @@ void fire_task(void *params)
         }
 
         /* Blit the fire bitmap scaled up to framebuffer. */
-        pod_scale_blit(0, 20, FRAMEBUFFER_WIDTH, FRAMEBUFFER_HEIGHT - 20, &bitmap);
+        pod_scale_blit(0, 20, DISPLAY_WIDTH, DISPLAY_HEIGHT - 20, &bitmap);
         //esp_task_wdt_reset();
 
         /* Update the FX fps counter. */
@@ -162,8 +162,8 @@ void switch_task(void *params)
 {
     while (1) {
         demo = demo + 1;
-        fire_clear();
         vTaskDelay(10000 / portTICK_RATE_MS);
+        fire_clear();
     }
 
     vTaskDelete(NULL);

@@ -34,8 +34,13 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <stdint.h>
 #include <bitmap.h>
 
-#define FIRE_WIDTH      (110)
-#define FIRE_HEIGHT     (80)
+#include <copepod_hal.h>
+
+// #define FIRE_WIDTH      (110)
+// #define FIRE_HEIGHT     (80)
+
+#define FIRE_WIDTH      (DISPLAY_WIDTH / 2)
+#define FIRE_HEIGHT     (DISPLAY_HEIGHT / 2)
 
 void fire_init();
 void fire_clear();

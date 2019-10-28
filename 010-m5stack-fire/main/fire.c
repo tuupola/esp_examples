@@ -90,12 +90,12 @@ void fire_init()
 void fire_clear()
 {
     //memset(fire, 0x00, FIRE_HEIGHT * FIRE_WIDTH);
-    // for(uint16_t y = 0; y < FIRE_HEIGHT - 1; y++) {
-    //     for(uint16_t x = 0; x < FIRE_WIDTH - 1; x++) {
-    //         fire[y][x] = 0;
-    //     }
-    // }
-    //fire[0][0] = 0;
+    for(uint16_t y = 0; y < FIRE_HEIGHT; y++) {
+        memset(fire[y], 0x00, FIRE_WIDTH);
+        // for(uint16_t x = 0; x < FIRE_WIDTH; x++) {
+        //    fire[y][x] = 0;
+        // }
+    }
 }
 
 void fire_effect(bitmap_t *dst, uint16_t multiplier, uint16_t divider)
