@@ -65,7 +65,7 @@ void app_main()
     rtc.seconds = 45;
 
     i2c_hal_master_init();
-    axp192_init();
+    axp192_init(i2c_hal_master_read, i2c_hal_master_write);
     bm8563_init(i2c_hal_master_read, i2c_hal_master_write);
     bm8563_write(&rtc);
 
