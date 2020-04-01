@@ -36,14 +36,14 @@ SOFTWARE.
 #include "sdkconfig.h"
 
 static const char *TAG = "main";
-bm8563_time_t rtc;
+bm8563_datetime_t rtc;
 
 void demo_task(void *params)
 {
     while (1) {
         bm8563_read(&rtc);
         ESP_LOGI(TAG,
-            "RTC: %02d-%02d-%02d %02d:%02d:%02d",
+            "RTC: %04d-%02d-%02d %02d:%02d:%02d",
             rtc.year, rtc.month, rtc.day, rtc.hours, rtc.minutes, rtc.seconds
         );
         vTaskDelay(1000 / portTICK_RATE_MS);
@@ -56,9 +56,17 @@ void app_main()
     ESP_LOGI(TAG, "SDK version: %s", esp_get_idf_version());
     ESP_LOGI(TAG, "Heap when starting: %d", esp_get_free_heap_size());
 
+    rtc.year = 2020;
+    rtc.month = 12;
+    rtc.day = 31;
+    rtc.hours = 23;
+    rtc.minutes = 59;
+    rtc.seconds = 45;
+
     i2c_hal_master_init();
     axp192_init();
-    bm8563_init();
+    bm8563_init(i2c_hal_master_read, i2c_hal_master_write);
+    bm8563_write(&rtc);
 
     ESP_LOGI(TAG, "Heap after init: %d", esp_get_free_heap_size());
 
