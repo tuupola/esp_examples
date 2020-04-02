@@ -1,19 +1,20 @@
 /*
 
-Copyright (c) 2018 Mika Tuupola
+SPDX-License-Identifier: MIT-0
+
+MIT No Attribution
+
+Copyright (c) 2018-2020 Mika Tuupola
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
 to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+furnished to do so.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
@@ -23,6 +24,7 @@ SOFTWARE.
 */
 
 #include <driver/i2c.h>
+#include <soc/i2c_reg.h>
 #include <esp_log.h>
 
 #include "i2c.h"
@@ -53,6 +55,11 @@ void i2c_slave_1_init()
     ));
 }
 
+static void IRAM_ATTR i2c_slave_2_isr_handler(void* arg)
+{
+    ESP_LOGI(TAG, "I2C slave 2 ISR.");
+}
+
 void i2c_slave_2_init()
 {
     int i2c_slave_port = I2C_SLAVE_2_NUM;
@@ -75,5 +82,8 @@ void i2c_slave_2_init()
         I2C_SLAVE_2_TX_BUF_LEN,
         0
     ));
+
+    // intr_handle_t handle;
+    // ESP_ERROR_CHECK(i2c_isr_register(I2C_SLAVE_2_NUM, i2c_slave_2_isr_handler, NULL, ESP_INTR_FLAG_LOWMED, &handle));
 }
 
