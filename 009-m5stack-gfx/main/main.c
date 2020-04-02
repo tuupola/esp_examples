@@ -1,19 +1,20 @@
 /*
 
-Copyright (c) 2018 - 2019 Mika Tuupola
+SPDX-License-Identifier: MIT-0
+
+MIT No Attribution
+
+Copyright (c) 2018-2020 Mika Tuupola
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
 to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+furnished to do so.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
@@ -48,7 +49,7 @@ static char primitive[32];
 static SemaphoreHandle_t mutex;
 static float fb_fps;
 static float fx_fps;
-static uint16_t demo = 0;
+static uint16_t current_demo = 0;
 
 /*
  * Flushes the framebuffer to display in a loop. This demo is
@@ -112,7 +113,7 @@ void switch_task(void *params)
     while (1) {
         ESP_LOGI(TAG, "%.*f %s per second, FB %.*f FPS", 1, fx_fps, primitive, 1, fb_fps);
 
-        demo = (demo + 1) % 13;
+        current_demo = (current_demo + 1) % 13;
         pod_clear_screen();
         fx_fps = fps2(true);
 
@@ -299,36 +300,24 @@ void rgb_demo()
 
 void demo_task(void *params)
 {
-    while (1) {
-        //vTaskDelay(1 / portTICK_RATE_MS);
-        if (0 == demo) {
-            rgb_demo();
-        } else if (1 == demo) {
-            put_character_demo();
-        } else if (2 == demo) {
-            put_pixel_demo();
-        } else if (3 == demo) {
-            fill_triangle_demo();
-        } else if (4 == demo) {
-            triangle_demo();
-        } else if (5 == demo) {
-            fill_rectangle_demo();
-        } else if (6 == demo) {
-            rectangle_demo();
-        } else if (7 == demo) {
-            line_demo();
-        } else if (8 == demo) {
-            circle_demo();
-        } else if (9 == demo) {
-            fill_circle_demo();
-        } else if (10 == demo) {
-            polygon_demo();
-        } else if (11 == demo) {
-            fill_polygon_demo();
-        } else if (12 == demo) {
-            put_text_demo();
-        }
+    void (*demo[13]) ();
 
+    demo[0] = rgb_demo;
+    demo[1] = put_character_demo;
+    demo[2] = put_pixel_demo;
+    demo[3] = fill_triangle_demo;
+    demo[4] = triangle_demo;
+    demo[5] = fill_rectangle_demo;
+    demo[6] = rectangle_demo;
+    demo[7] = line_demo;
+    demo[8] = circle_demo;
+    demo[9] = fill_circle_demo;
+    demo[10] = polygon_demo;
+    demo[11] = fill_polygon_demo;
+    demo[12] = put_text_demo;
+
+    while (1) {
+        (*demo[current_demo])();
         /* Update the primitive fps counter. */
         fx_fps = fps2(false);
     }
