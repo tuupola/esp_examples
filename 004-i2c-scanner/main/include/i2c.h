@@ -1,19 +1,20 @@
 /*
 
-Copyright (c) 2018 Mika Tuupola
+SPDX-License-Identifier: MIT-0
+
+MIT No Attribution
+
+Copyright (c) 2018-2020 Mika Tuupola
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
 to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+furnished to do so.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
@@ -25,8 +26,8 @@ SOFTWARE.
 #ifndef _I2C_H
 #define	_I2C_H
 
-#define I2C_MASTER_SCL         19 /* Use yellow wire. */
-#define I2C_MASTER_SDA         18 /* Use green wire. */
+#define I2C_MASTER_SCL         22 /* Use yellow wire. */
+#define I2C_MASTER_SDA         21 /* Use green wire. */
 #define I2C_MASTER_NUM         I2C_NUM_1
 #define I2C_MASTER_TX_BUF_LEN  0
 #define I2C_MASTER_RX_BUF_LEN  0
