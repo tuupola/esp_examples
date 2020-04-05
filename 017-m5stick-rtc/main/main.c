@@ -41,12 +41,34 @@ bm8563_datetime_t rtc;
 
 void demo_task(void *params)
 {
+    float vacin, iacin, vvbus, ivbus, temp, vbat, icharge, idischarge;
+
     while (1) {
         bm8563_read(&rtc);
         ESP_LOGI(TAG,
             "RTC: %04d-%02d-%02d %02d:%02d:%02d",
             rtc.year, rtc.month, rtc.day, rtc.hours, rtc.minutes, rtc.seconds
         );
+
+        axp192_read(AXP192_ACIN_VOLTAGE, &vacin);
+        axp192_read(AXP192_ACIN_CURRENT, &iacin);
+        axp192_read(AXP192_VBUS_VOLTAGE, &vvbus);
+        axp192_read(AXP192_VBUS_CURRENT, &ivbus);
+        axp192_read(AXP192_TEMP, &temp);
+        axp192_read(AXP192_BATTERY_VOLTAGE, &vbat);
+        axp192_read(AXP192_CHARGE_CURRENT, &icharge);
+        axp192_read(AXP192_DISCHARGE_CURRENT, &idischarge);
+
+        ESP_LOGI(TAG,
+            "vacin: %.2fV iacin: %.2fA vvbus: %.2fV ivbus: %.2fA temp: %.0fC",
+            vacin, iacin, vvbus, ivbus, temp
+        );
+
+        ESP_LOGI(TAG,
+            "vbat: %.2fV ichage: %.2fA idischarge: %.2fA",
+            vbat, icharge, idischarge
+        );
+
         vTaskDelay(1000 / portTICK_RATE_MS);
     }
     vTaskDelete(NULL);
