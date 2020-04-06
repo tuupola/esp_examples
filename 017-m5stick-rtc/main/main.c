@@ -42,6 +42,7 @@ bm8563_datetime_t rtc;
 void demo_task(void *params)
 {
     float vacin, iacin, vvbus, ivbus, vts, temp, pbat, vbat, icharge, idischarge, vaps;
+    uint8_t power, charge;
 
     while (1) {
         bm8563_read(&rtc);
@@ -68,6 +69,12 @@ void demo_task(void *params)
             vacin, iacin, vvbus, ivbus, vts, temp, pbat, vbat, icharge, idischarge, vaps
         );
 
+        axp192_ioctl(AXP192_READ_POWER_STATUS, &power);
+        axp192_ioctl(AXP192_READ_CHARGE_STATUS, &charge);
+        ESP_LOGI(TAG,
+            "power: 0x%02x charge: 0x%02x",
+            power, charge
+        );
         vTaskDelay(1000 / portTICK_RATE_MS);
     }
     vTaskDelete(NULL);
