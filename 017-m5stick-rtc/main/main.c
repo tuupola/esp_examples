@@ -41,7 +41,7 @@ bm8563_datetime_t rtc;
 
 void demo_task(void *params)
 {
-    float vacin, iacin, vvbus, ivbus, vts, temp, pbat, vbat, icharge, idischarge, vaps;
+    float vacin, iacin, vvbus, ivbus, vts, temp, pbat, vbat, icharge, idischarge, vaps, cbat;
     uint8_t power, charge;
 
     while (1) {
@@ -62,11 +62,13 @@ void demo_task(void *params)
         axp192_read(AXP192_CHARGE_CURRENT, &icharge);
         axp192_read(AXP192_DISCHARGE_CURRENT, &idischarge);
         axp192_read(AXP192_APS_VOLTAGE, &vaps);
+        axp192_read(AXP192_COULOMB_COUNTER, &cbat);
 
         ESP_LOGI(TAG,
             "vacin: %.2fV iacin: %.2fA vvbus: %.2fV ivbus: %.2fA vts: %.2fV temp: %.0fC "
-            "pbat: %.2fmW vbat: %.2fV icharge: %.2fA idischarge: %.2fA, vaps: %.2fV",
-            vacin, iacin, vvbus, ivbus, vts, temp, pbat, vbat, icharge, idischarge, vaps
+            "pbat: %.2fmW vbat: %.2fV icharge: %.2fA idischarge: %.2fA, vaps: %.2fV "
+            "cbat: %.2fmAh",
+            vacin, iacin, vvbus, ivbus, vts, temp, pbat, vbat, icharge, idischarge, vaps, cbat
         );
 
         axp192_ioctl(AXP192_READ_POWER_STATUS, &power);
@@ -93,7 +95,13 @@ void app_main()
     rtc.seconds = 45;
 
     i2c_hal_master_init();
+
+    ESP_LOGD(TAG, "Initializing AXP192");
     axp192_init(i2c_hal_master_read, i2c_hal_master_write);
+    axp192_ioctl(AXP192_COULOMB_COUNTER_ENABLE, NULL);
+    //axp192_ioctl(AXP192_COULOMB_COUNTER_CLEAR, NULL);
+
+    ESP_LOGD(TAG, "Initializing BM8563");
     bm8563_init(i2c_hal_master_read, i2c_hal_master_write);
     bm8563_write(&rtc);
 
