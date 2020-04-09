@@ -51,32 +51,6 @@ void demo_task(void *params)
             rtc.year, rtc.month, rtc.day, rtc.hours, rtc.minutes, rtc.seconds
         );
 
-        axp192_read(AXP192_ACIN_VOLTAGE, &vacin);
-        axp192_read(AXP192_ACIN_CURRENT, &iacin);
-        axp192_read(AXP192_VBUS_VOLTAGE, &vvbus);
-        axp192_read(AXP192_VBUS_CURRENT, &ivbus);
-        axp192_read(AXP192_TEMP, &temp);
-        axp192_read(AXP192_TS_INPUT, &vts);
-        axp192_read(AXP192_BATTERY_POWER, &pbat);
-        axp192_read(AXP192_BATTERY_VOLTAGE, &vbat);
-        axp192_read(AXP192_CHARGE_CURRENT, &icharge);
-        axp192_read(AXP192_DISCHARGE_CURRENT, &idischarge);
-        axp192_read(AXP192_APS_VOLTAGE, &vaps);
-        axp192_read(AXP192_COULOMB_COUNTER, &cbat);
-
-        ESP_LOGI(TAG,
-            "vacin: %.2fV iacin: %.2fA vvbus: %.2fV ivbus: %.2fA vts: %.2fV temp: %.0fC "
-            "pbat: %.2fmW vbat: %.2fV icharge: %.2fA idischarge: %.2fA, vaps: %.2fV "
-            "cbat: %.2fmAh",
-            vacin, iacin, vvbus, ivbus, vts, temp, pbat, vbat, icharge, idischarge, vaps, cbat
-        );
-
-        axp192_ioctl(AXP192_READ_POWER_STATUS, &power);
-        axp192_ioctl(AXP192_READ_CHARGE_STATUS, &charge);
-        ESP_LOGI(TAG,
-            "power: 0x%02x charge: 0x%02x",
-            power, charge
-        );
         vTaskDelay(1000 / portTICK_RATE_MS);
     }
     vTaskDelete(NULL);
@@ -87,6 +61,7 @@ void app_main()
     ESP_LOGI(TAG, "SDK version: %s", esp_get_idf_version());
     ESP_LOGI(TAG, "Heap when starting: %d", esp_get_free_heap_size());
 
+    /* Initial time for RTC */
     rtc.year = 2020;
     rtc.month = 12;
     rtc.day = 31;
@@ -98,8 +73,6 @@ void app_main()
 
     ESP_LOGD(TAG, "Initializing AXP192");
     axp192_init(i2c_hal_master_read, i2c_hal_master_write);
-    axp192_ioctl(AXP192_COULOMB_COUNTER_ENABLE, NULL);
-    //axp192_ioctl(AXP192_COULOMB_COUNTER_CLEAR, NULL);
 
     ESP_LOGD(TAG, "Initializing BM8563");
     bm8563_init(i2c_hal_master_read, i2c_hal_master_write);
