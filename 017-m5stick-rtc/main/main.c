@@ -41,9 +41,6 @@ bm8563_datetime_t rtc;
 
 void demo_task(void *params)
 {
-    float vacin, iacin, vvbus, ivbus, vts, temp, pbat, vbat, icharge, idischarge, vaps, cbat;
-    uint8_t power, charge;
-
     while (1) {
         bm8563_read(&rtc);
         ESP_LOGI(TAG,
