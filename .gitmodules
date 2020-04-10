@@ -55,9 +55,6 @@
 [submodule "009-m5stack-gfx/components/esp_mipi"]
 	path = 009-m5stack-gfx/components/esp_mipi
 	url = git@github.com:tuupola/esp_mipi.git
-[submodule "015-m5stick-gfx/components/esp_mipi"]
-	path = 015-m5stick-gfx/components/esp_mipi
-	url = git@github.com:tuupola/esp_mipi.git
 [submodule "015-m5stick-gfx/components/copepod_esp_mipi"]
 	path = 015-m5stick-gfx/components/copepod_esp_mipi
 	url = git@github.com:tuupola/copepod_esp_mipi.git
