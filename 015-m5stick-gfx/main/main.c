@@ -83,7 +83,7 @@ void fps_task(void *params)
     uint16_t color = rgb565(0, 255, 0);
     char message[128];
 
-#ifdef CONFIG_POD_HAL_USE_FRAMEBUFFER
+#ifdef CONFIG_POD_HAL_USE_DOUBLE_BUFFERING
     while (1) {
         pod_set_clip_window(0, 0, DISPLAY_WIDTH - 1, DISPLAY_HEIGHT - 1);
 
@@ -296,8 +296,8 @@ void rgb_demo()
     int16_t x2 = 2 * x1;
 
     pod_fill_rectangle(x0, 0, x1 - 1, DISPLAY_HEIGHT, red);
-    pod_fill_rectangle(x1 + 1, 0, x2 - 1, DISPLAY_HEIGHT, green);
-    pod_fill_rectangle(x2 + 1, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT, blue);
+    pod_fill_rectangle(x1, 0, x2 - 1, DISPLAY_HEIGHT, green);
+    pod_fill_rectangle(x2, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT, blue);
 }
 
 void demo_task(void *params)
@@ -354,7 +354,7 @@ void app_main()
     mutex = xSemaphoreCreateMutex();
 
     if (NULL != mutex) {
-#ifdef CONFIG_POD_HAL_USE_FRAMEBUFFER
+#ifdef CONFIG_POD_HAL_USE_DOUBLE_BUFFERING
         xTaskCreatePinnedToCore(framebuffer_task, "Framebuffer", 8192, NULL, 1, NULL, 0);
 #endif
         xTaskCreatePinnedToCore(fps_task, "FPS", 8092, NULL, 2, NULL, 1);
