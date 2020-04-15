@@ -59,10 +59,6 @@ void fire_init()
     rgb_t rgb;
 
     palette = (uint16_t *) malloc(256 * sizeof(uint16_t));
-    // fire = heap_caps_malloc(FIRE_WIDTH * FIRE_HEIGHT, | MALLOC_CAP_SPIRAM);
-    // for (uint16_t i = 0; i < FIRE_HEIGHT; i++) {
-    //     fire[i] = (uint8_t *)malloc(FIRE_WIDTH * sizeof(uint8_t));
-    // }
 
     fire = (uint8_t **)malloc(FIRE_HEIGHT * sizeof(uint8_t *));
     for (uint16_t i = 0; i < FIRE_HEIGHT; i++) {
@@ -133,7 +129,6 @@ void fire_feed()
 
 void fire_putchar(char ascii, int16_t x0, int16_t y0, const char font[][8])
 {
-
     /* Basic clipping. */
     if ((x0 < 0) || (y0 < 0) || (x0 > FIRE_WIDTH - 8 ) || (y0 > FIRE_HEIGHT - 8)) {
         return;
