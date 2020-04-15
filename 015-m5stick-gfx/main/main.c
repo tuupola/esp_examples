@@ -42,7 +42,7 @@ SOFTWARE.
 #include "font8x8.h"
 #include "fps.h"
 #include "fps2.h"
-#include "esp_i2c_hal.h"
+#include "i2c_helper.h"
 #include "sdkconfig.h"
 
 static const char *TAG = "main";
@@ -344,8 +344,8 @@ void app_main()
     ESP_LOGI(TAG, "SDK version: %s", esp_get_idf_version());
     ESP_LOGI(TAG, "Heap when starting: %d", esp_get_free_heap_size());
 
-    i2c_hal_master_init();
-    axp192_init();
+    i2c_init();
+    axp192_init(i2c_read, i2c_write);
     pod_init();
     pod_set_clip_window(0, 20, DISPLAY_WIDTH - 1, DISPLAY_HEIGHT - 21);
 
