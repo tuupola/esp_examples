@@ -53,17 +53,22 @@ static uint16_t demo = 0;
 #define FRAMEBUFFER_HEIGHT  240
 
 /*
- * Flushes the framebuffer to display in a loop. With the ILI9341 DMA
- * driver can currently do 29 FPS.
+ * Flushes the framebuffer to display in a loop. This demo is
+ * capped to 30 fps.
  */
 void framebuffer_task(void *params)
 {
+    TickType_t last;
+    const TickType_t frequency = 1000 / 30 / portTICK_RATE_MS;
+
+    last = xTaskGetTickCount();
+
     while (1) {
         xSemaphoreTake(mutex, portMAX_DELAY);
         pod_flush();
         xSemaphoreGive(mutex);
         fb_fps = fps();
-        //vTaskDelay(1 / portTICK_RATE_MS);
+        vTaskDelayUntil(&last, frequency);
     }
 
     vTaskDelete(NULL);
@@ -81,11 +86,13 @@ void fps_task(void *params)
 
     while (1) {
         color = rgb565(0, 255, 0);
-        sprintf(message, " FX %.*f FPS                FB %.*f FPS", 1, fx_fps, 1, fb_fps);
-        pod_put_text(message, 0, 4, color, font8x8);
 
-        ESP_LOGI(TAG, "FX %.*f FPS / FB %.*f FPS", 1, fx_fps, 1, fb_fps);
+        sprintf(message, "%.*f FXPS    ", 0, fx_fps);
+        pod_put_text(message, 8, 4, color, font8x8);
+        sprintf(message, "%.*f FPS  ", 1, fb_fps);
+        pod_put_text(message, DISPLAY_WIDTH - 72, 4, color, font8x8);
 
+        ESP_LOGI(TAG, "%.*f FXPS / %.*f FPS", 1, fx_fps, 1, fb_fps);
         vTaskDelay(1000 / portTICK_RATE_MS);
     }
     vTaskDelete(NULL);
