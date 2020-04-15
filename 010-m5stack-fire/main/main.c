@@ -25,21 +25,19 @@ SOFTWARE.
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
 #include <freertos/FreeRTOS.h>
 #include <freertos/semphr.h>
 #include <freertos/task.h>
 #include <esp_log.h>
 #include <esp_task_wdt.h>
+#include <bitmap.h>
+#include <copepod_hal.h>
+#include <copepod.h>
+#include <font8x8.h>
+#include <rgb565.h>
+#include <fps.h>
 
-#include "bitmap.h"
-#include "byteswap.h"
-#include "copepod_hal.h"
-#include "copepod.h"
-#include "font8x8.h"
-#include "rgb565.h"
 #include "fire.h"
-#include "fps.h"
 #include "fps2.h"
 
 static const char *TAG = "main";
@@ -48,9 +46,6 @@ static SemaphoreHandle_t mutex;
 static float fb_fps;
 static float fx_fps;
 static uint16_t demo = 0;
-
-#define FRAMEBUFFER_WIDTH   320
-#define FRAMEBUFFER_HEIGHT  240
 
 /*
  * Flushes the framebuffer to display in a loop. This demo is
