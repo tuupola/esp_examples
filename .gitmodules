@@ -85,3 +85,6 @@
 [submodule "017-m5stick-rtc/components/axp192"]
 	path = 017-m5stick-rtc/components/axp192
 	url = git@github.com:tuupola/axp192.git
+[submodule "015-m5stick-gfx/components/esp_mipi"]
+	path = 015-m5stick-gfx/components/esp_mipi
+	url = git@github.com:tuupola/esp_mipi.git
